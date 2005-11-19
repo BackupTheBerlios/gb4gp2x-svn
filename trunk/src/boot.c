@@ -233,7 +233,7 @@ int main(int argc, char *argv[]) {
 	iCoreDump(cRAM, "dump.bin");
 	printf("done.\n");
 
-	for(i=0;i<10;i++)
+	for(i=0;i<23;i++)
 		iClock(&sCPUstate, cRAM);
 	
 
