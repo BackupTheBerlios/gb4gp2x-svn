@@ -52,6 +52,7 @@ int iCheckLogo(char *cLogo) {
 
 int iInit(char *cRAM, sState *sCPUstate) {
 
+	// initial register values
 	sCPUstate->A = 0x01;
 	sCPUstate->F = 0xB0;
 	sCPUstate->B = 0x00;
@@ -61,8 +62,8 @@ int iInit(char *cRAM, sState *sCPUstate) {
 	sCPUstate->H = 0x01;
 	sCPUstate->L = 0x4D;
 
-	sCPUstate->iPC = 0x0100;
-	sCPUstate->iSP = 0xFFFE;
+	sCPUstate->iPC = 0x0100; // entry point
+	sCPUstate->iSP = 0xFFFE; // stack pointer init
 	
 	cRAM[0xFF05] = 0x00; // TIMA
 	cRAM[0xFF06] = 0x00; // TMA
@@ -141,7 +142,6 @@ int iQuery(unsigned char *cRAM) {
 				printf("unknown (0x%02x)\n", cRAM[0x014A]);
 				break;
 		}
-//		printf("\t02x
 	
 		return 1;
 }
@@ -154,6 +154,8 @@ int iBoot(char *cRomFilename, char *cRAM, sState *sCPUstate) {
 	printf("booting %s...\n", cRomFilename);
 	
 	fRomFile=fopen(cRomFilename, "r");
+	if(fRomFile==NULL)
+		return 0;
 
 	printf("loading ROM into memory... ");
 	
@@ -195,7 +197,7 @@ int iBoot(char *cRomFilename, char *cRAM, sState *sCPUstate) {
 	
 	printf("done.\nboot sequence complete.\n\n");
 	fclose(fRomFile);
-	return 0;
+	return 1;
 }
 
 int iCoreDump(char *cRAM, char *cDumpFilename) {
@@ -217,10 +219,25 @@ int iCoreDump(char *cRAM, char *cDumpFilename) {
 int main(int argc, char *argv[]) {
 	char *cRAM=(char*)malloc(65536);
 	sState sCPUstate;
-	int i;
-	
-	iBoot(argv[1],cRAM, &sCPUstate);
+	int i, iNumOpcodes;
 
+	if(argc == 1) {
+		printf("SYNTAX: %s ROM\n", argv[0]);
+		return -1;
+	}
+
+	if(argc > 2)
+		iNumOpcodes = atoi(argv[2]);
+	else
+		iNumOpcodes = 10;
+	
+	// boot the ROM
+	if(iBoot(argv[1],cRAM, &sCPUstate) == 0) {
+		printf("ERROR: Could not open '%s'.\n", argv[1]);
+		return 0;
+	}
+	
+	// statistics
 	printf("registers:\n");
 	printf("AF: %02x%02x\n", sCPUstate.A & 255, sCPUstate.F & 255);
 	printf("BC: %02x%02x\n", sCPUstate.B & 255, sCPUstate.C & 255);
@@ -233,7 +250,8 @@ int main(int argc, char *argv[]) {
 	iCoreDump(cRAM, "dump.bin");
 	printf("done.\n");
 
-	for(i=0;i<23;i++)
+	// execute the beginning of the ROM
+	for(i=0;i<iNumOpcodes;i++)
 		iClock(&sCPUstate, cRAM);
 	
 
