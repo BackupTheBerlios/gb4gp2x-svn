@@ -2,8 +2,8 @@ OBJ=		objects
 SRC=		src
 BIN=		bin
 HEADER=		include
-CCFLAGS=	-Wall -O2 -g -I $(HEADER)
-CC=			gcc
+CCFLAGS=	-Wall -O2 -g -static -fno-strict-aliasing -I $(HEADER)
+CC=			arm-unknown-linux-gnu-gcc
 
 default:
 	make $(BIN)/gb4gp2x
