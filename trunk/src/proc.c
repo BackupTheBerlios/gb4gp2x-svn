@@ -45,21 +45,47 @@ int iFlag(sState *sCPU, int Z, int N, int H, int C) {
 	return 1;
 }
 
-int iADC  (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iADD  (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iAND  (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iBIT  (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iCALL (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iCCF  (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iCP   (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iCPL  (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iDAA  (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iDEC  (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iDI   (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iEI   (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iHALT (sState *sCPU, uchar *cRAM, uchar *cOpcode);
+int iADC  (sState *sCPU, uchar *cRAM); 
 
-int iINC  (sState *sCPU, uchar *cRAM, uchar *cOpcode) {
+
+int iADD  (sState *sCPU, uchar *cRAM) {
+	int iPC = sCPU->iPC;
+	int iZ = 2, iH = 0, iC = 0;
+	int iOldA;
+	
+	switch(cRAM[iPC]) {
+		case 0x81: // ADD	A, C
+			iOldA = sCPU->A;
+			sCPU->A += sCPU->C;
+			iZ = 0;
+			
+			if(sCPU->A == 0)
+				iZ = 1;
+			if((sCPU->A >= 0x10) && (iOldA < 0x10))
+				iH = 1;
+			if(sCPU->A < iOldA)
+				iC = 1;
+					
+			printf("ADD\tA, C\t(A->%02x C=%02x)\n",sCPU->A,sCPU->C);
+	}
+
+	iFlag(sCPU, iZ, 0, iH, iC);
+	return 1;	
+}
+
+int iAND  (sState *sCPU, uchar *cRAM);
+int iBIT  (sState *sCPU, uchar *cRAM);
+int iCALL (sState *sCPU, uchar *cRAM);
+int iCCF  (sState *sCPU, uchar *cRAM);
+int iCP   (sState *sCPU, uchar *cRAM);
+int iCPL  (sState *sCPU, uchar *cRAM);
+int iDAA  (sState *sCPU, uchar *cRAM);
+int iDEC  (sState *sCPU, uchar *cRAM);
+int iDI   (sState *sCPU, uchar *cRAM);
+int iEI   (sState *sCPU, uchar *cRAM);
+int iHALT (sState *sCPU, uchar *cRAM);
+
+int iINC  (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
 	int iRet = 1;
 	int iH=0, iZ=0, iN =2, iBC;
@@ -103,7 +129,7 @@ int iINC  (sState *sCPU, uchar *cRAM, uchar *cOpcode) {
 	
 }
 
-int iJP   (sState *sCPU, uchar *cRAM, uchar *cOpcode) {
+int iJP   (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
 	int iRet= 0;
 	
@@ -124,9 +150,9 @@ int iJP   (sState *sCPU, uchar *cRAM, uchar *cOpcode) {
 	return iRet;	
 }
 
-int iJR   (sState *sCPU, uchar *cRAM, uchar *cOpcode);
+int iJR   (sState *sCPU, uchar *cRAM);
 
-int iLD   (sState *sCPU, uchar *cRAM, uchar *cOpcode) {
+int iLD   (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
 	int iRet= 1;
 	
@@ -165,9 +191,9 @@ int iLD   (sState *sCPU, uchar *cRAM, uchar *cOpcode) {
 	return iRet;
 }
 
-int iLDD  (sState *sCPU, uchar *cRAM, uchar *cOpcode);
+int iLDD  (sState *sCPU, uchar *cRAM);
 
-int iLDI  (sState *sCPU, uchar *cRAM, uchar *cOpcode) {
+int iLDI  (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
 	int iRet = 3;
 	
@@ -181,37 +207,38 @@ int iLDI  (sState *sCPU, uchar *cRAM, uchar *cOpcode) {
 	return iRet;
 };
 
-int iNOP  (sState *sCPU, uchar *cRAM, uchar *cOpcode) {
+int iNOP  (sState *sCPU, uchar *cRAM) {
 	printf("NOP\n");
 	return 1;
 }
-int iOR   (sState *sCPU, uchar *cRAM, uchar *cOpcode);
+int iOR   (sState *sCPU, uchar *cRAM);
 
-int iPOP  (sState *sCPU, uchar *cRAM, uchar *cOpcode) {
+int iPOP  (sState *sCPU, uchar *cRAM) {
 	return 1;
 }
 
-int iPUSH (sState *sCPU, uchar *cRAM, uchar *cOpcode) {
+int iPUSH (sState *sCPU, uchar *cRAM) {
 	int iSP = sCPU->iSP;
+	int iPC = sCPU->iPC;
 
-	cRAM[iSP-2] = cOpcode[1];
-	cRAM[iSP-1] = cOpcode[0];
+	cRAM[iSP-2] = cRAM[iPC+2];
+	cRAM[iSP-1] = cRAM[iPC+1];
 
 	sCPU->iSP-=2;
 
 	return 1;
 }
 
-int iRES  (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iRET  (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iRETI (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iRST  (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iSBC  (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iSCF  (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iSET  (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iSTOP (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iSUB  (sState *sCPU, uchar *cRAM, uchar *cOpcode);
-int iXOR  (sState *sCPU, uchar *cRAM, uchar *cOpcode);
+int iRES  (sState *sCPU, uchar *cRAM);
+int iRET  (sState *sCPU, uchar *cRAM);
+int iRETI (sState *sCPU, uchar *cRAM);
+int iRST  (sState *sCPU, uchar *cRAM);
+int iSBC  (sState *sCPU, uchar *cRAM);
+int iSCF  (sState *sCPU, uchar *cRAM);
+int iSET  (sState *sCPU, uchar *cRAM);
+int iSTOP (sState *sCPU, uchar *cRAM);
+int iSUB  (sState *sCPU, uchar *cRAM);
+int iXOR  (sState *sCPU, uchar *cRAM);
 
 int iClock(sState *sCPU, uchar *cRAM) {
 	int iAdd=1, iPC=sCPU->iPC;
@@ -220,14 +247,12 @@ int iClock(sState *sCPU, uchar *cRAM) {
 
 	switch(cRAM[iPC]) {
 		// ADD
-		case 0x81: // ADD 	A, C
-			sCPU->A += sCPU->C;
-			printf("ADD\tA, C\t(A->%02x C=%02x)\n",sCPU->A,sCPU->C);
+		case 0x81: iAdd = iADD(sCPU, cRAM);
 			break;
 
 		// CALL
 		case 0xCD: //CALL	nnnn
-			iAdd = iPUSH (sCPU, cRAM, &cRAM[iPC]); // FIX THIS CRAP
+			iAdd = iPUSH (sCPU, cRAM); // FIX THIS CRAP
 			sCPU->iPC = (cRAM[iPC+2] << 8) ^ cRAM[iPC+1];
 			printf("CALL\t%02x%02x\n", cRAM[iPC+2], cRAM[iPC+1]);
 			iAdd=0;
@@ -242,12 +267,12 @@ int iClock(sState *sCPU, uchar *cRAM) {
 		// INC
 		case 0x03:
 		case 0x04: 
-		case 0x2c: iAdd = iINC(sCPU, cRAM, &cRAM[iPC]);
+		case 0x2c: iAdd = iINC(sCPU, cRAM);
 			break;
 		
 		// JP
 		case 0xC3: 
-		case 0xE9: iAdd = iJP(sCPU, cRAM, &cRAM[iPC]);
+		case 0xE9: iAdd = iJP(sCPU, cRAM);
 			break;
 
 		// LD
@@ -255,20 +280,20 @@ int iClock(sState *sCPU, uchar *cRAM) {
 		case 0x02:
 		case 0x06:
 		case 0x31:
-		case 0x7e: iAdd = iLD(sCPU, cRAM, &cRAM[iPC]);
+		case 0x7e: iAdd = iLD(sCPU, cRAM);
 			break;
 
 		// LDI
-		case 0x22: iAdd = iLDI(sCPU, cRAM, &cRAM[iPC]);
+		case 0x22: iAdd = iLDI(sCPU, cRAM);
 			break;
 		
 		// NOP
-		case 0x00: iAdd = iNOP(sCPU, cRAM, &cRAM[iPC]);
+		case 0x00: iAdd = iNOP(sCPU, cRAM);
 			break;
 
 		// RST
 		case 0xEF: // RST	28
-			iAdd = iPUSH (sCPU, cRAM, &cRAM[iPC]); // FIX THIS CRAP!
+			iAdd = iPUSH (sCPU, cRAM); // FIX THIS CRAP!
 			sCPU->iPC = 0x28;
 			iAdd=0;
 			printf("RST\t28\n");
