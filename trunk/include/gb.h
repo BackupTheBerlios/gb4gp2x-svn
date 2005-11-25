@@ -32,6 +32,8 @@ typedef unsigned char uchar;
 typedef struct {
 	uchar A,F,B,C,D,E,H,L;
 	int iPC, iSP;
+
+	int iEI;
 } sState;
 
 #endif

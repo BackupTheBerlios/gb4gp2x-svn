@@ -65,7 +65,8 @@ int iInit(char *cRAM, sState *sCPUstate) {
 
 	sCPUstate->iPC = 0x0100; // entry point
 	sCPUstate->iSP = 0xFFFE; // stack pointer init
-	
+	sCPUstate->iEI = 1; // enable interrupts
+
 	cRAM[0xFF05] = 0x00; // TIMA
 	cRAM[0xFF06] = 0x00; // TMA
 	cRAM[0xFF07] = 0x00; // TAC
