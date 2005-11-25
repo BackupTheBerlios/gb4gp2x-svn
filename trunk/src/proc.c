@@ -75,7 +75,32 @@ int iADD  (sState *sCPU, uchar *cRAM) {
 
 int iAND  (sState *sCPU, uchar *cRAM);
 int iBIT  (sState *sCPU, uchar *cRAM);
-int iCALL (sState *sCPU, uchar *cRAM);
+
+int iCALL (sState *sCPU, uchar *cRAM){
+	int iPC = sCPU->iPC;
+	int iSP = sCPU->iSP;
+
+	uchar cHB=0, cLB=0;
+
+	switch(cRAM[iPC]) {
+		case 0xCD: //CALL	nnnn
+			cHB = cRAM[iPC+2];
+			cLB = cRAM[iPC+1];
+			
+			printf("CALL\t%02x%02x\n", cRAM[iPC+2], cRAM[iPC+1]);
+			break;
+	}
+
+	sCPU->iPC=(cHB<<8)^cLB;
+
+	// Push the calling address onto the stack
+	cRAM[iSP-2] = (iPC>>8) & 255;
+	cRAM[iSP-1] = iPC & 255;
+	sCPU->iSP-=2;
+
+	return 0;
+}
+
 int iCCF  (sState *sCPU, uchar *cRAM);
 int iCP   (sState *sCPU, uchar *cRAM);
 int iCPL  (sState *sCPU, uchar *cRAM);
@@ -217,6 +242,7 @@ int iPOP  (sState *sCPU, uchar *cRAM) {
 	return 1;
 }
 
+/*
 int iPUSH (sState *sCPU, uchar *cRAM) {
 	int iSP = sCPU->iSP;
 	int iPC = sCPU->iPC;
@@ -228,11 +254,70 @@ int iPUSH (sState *sCPU, uchar *cRAM) {
 
 	return 1;
 }
+*/
 
 int iRES  (sState *sCPU, uchar *cRAM);
 int iRET  (sState *sCPU, uchar *cRAM);
 int iRETI (sState *sCPU, uchar *cRAM);
-int iRST  (sState *sCPU, uchar *cRAM);
+
+int iRST  (sState *sCPU, uchar *cRAM) {
+	int iPC = sCPU->iPC;
+	int iSP = sCPU->iSP;
+
+	uchar cJP=0;
+
+	switch(cRAM[iPC]) {
+		case 0xC7:
+			cJP = 0x00;
+			printf("RST\t00\n");
+			break;
+
+		case 0xCF:
+			cJP = 0x08;
+			printf("RST\t08\n");
+			break;
+		
+		case 0xD7:
+			cJP = 0x10;
+			printf("RST\t10\n");
+			break;
+		
+		case 0xDF:
+			cJP = 0x18;
+			printf("RST\t18\n");
+			break;
+		
+		case 0xE7:
+			cJP = 0x20;
+			printf("RST\t20\n");
+			break;
+		
+		case 0xEF:		
+			cJP = 0x28;
+			printf("RST\t28\n");
+			break;
+		
+		case 0xF7:
+			cJP = 0x30;
+			printf("RST\t30\n");
+			break;
+
+		case 0xFF:
+			cJP = 0x38;
+			printf("RST\t38\n");
+			break;
+	}
+	
+	// Push the calling address onto the stack
+	cRAM[iSP-2] = 0x00;
+	cRAM[iSP-1] = cJP;
+			
+	sCPU->iPC = cJP;
+	sCPU->iSP-=2;
+	
+	return 0;
+}
+
 int iSBC  (sState *sCPU, uchar *cRAM);
 int iSCF  (sState *sCPU, uchar *cRAM);
 int iSET  (sState *sCPU, uchar *cRAM);
@@ -251,11 +336,7 @@ int iClock(sState *sCPU, uchar *cRAM) {
 			break;
 
 		// CALL
-		case 0xCD: //CALL	nnnn
-			iAdd = iPUSH (sCPU, cRAM); // FIX THIS CRAP
-			sCPU->iPC = (cRAM[iPC+2] << 8) ^ cRAM[iPC+1];
-			printf("CALL\t%02x%02x\n", cRAM[iPC+2], cRAM[iPC+1]);
-			iAdd=0;
+		case 0xCD: iAdd = iCALL(sCPU, cRAM);
 			break;
 
 		// DEC
@@ -292,11 +373,14 @@ int iClock(sState *sCPU, uchar *cRAM) {
 			break;
 
 		// RST
-		case 0xEF: // RST	28
-			iAdd = iPUSH (sCPU, cRAM); // FIX THIS CRAP!
-			sCPU->iPC = 0x28;
-			iAdd=0;
-			printf("RST\t28\n");
+		case 0xC7:
+		case 0xCF:
+		case 0xD7:
+		case 0xDF:
+		case 0xE7:
+		case 0xEF:
+		case 0xF7:		
+		case 0xFF: iAdd = iRST(sCPU, cRAM);
 			break;
 
 		default: printf("???\t(%02x)\n", cRAM[iPC]);
