@@ -257,7 +257,17 @@ int iPUSH (sState *sCPU, uchar *cRAM) {
 */
 
 int iRES  (sState *sCPU, uchar *cRAM);
-int iRET  (sState *sCPU, uchar *cRAM);
+
+int iRET  (sState *sCPU, uchar *cRAM) {
+	int iSP = sCPU->iSP;
+
+	sCPU->iPC=(cRAM[iSP] << 8) ^ cRAM[iSP+1];
+	sCPU->iSP+=2;
+
+	printf("RET\n");
+	return 1;
+}
+
 int iRETI (sState *sCPU, uchar *cRAM);
 
 int iRST  (sState *sCPU, uchar *cRAM) {
@@ -309,8 +319,8 @@ int iRST  (sState *sCPU, uchar *cRAM) {
 	}
 	
 	// Push the calling address onto the stack
-	cRAM[iSP-2] = 0x00;
-	cRAM[iSP-1] = cJP;
+	cRAM[iSP-2] = (iPC >> 8) & 255;
+	cRAM[iSP-1] = iPC & 255;
 			
 	sCPU->iPC = cJP;
 	sCPU->iSP-=2;
@@ -370,6 +380,10 @@ int iClock(sState *sCPU, uchar *cRAM) {
 		
 		// NOP
 		case 0x00: iAdd = iNOP(sCPU, cRAM);
+			break;
+
+		// RET
+		case 0xC9: iAdd = iRET(sCPU, cRAM);
 			break;
 
 		// RST
