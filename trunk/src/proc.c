@@ -251,6 +251,18 @@ int iINC  (sState *sCPU, uchar *cRAM) {
 			printf("INC\tB\t");
 			break;
 		
+		case 0x0C: // INC	C
+			sCPU->C++;
+			
+			if(sCPU->C == 0)
+				iZ = 1;
+			if(sCPU->C == 0x10)
+				iH = 1;
+			iN = 0;
+			
+			printf("INC\tC\t");
+			break;
+		
 		case 0x2c: // INC	L
 			sCPU->L++;
 			
@@ -296,10 +308,21 @@ int iJR   (sState *sCPU, uchar *cRAM) {
 	int iAdd = 2;
 
 	switch(cRAM[iPC]) {
+		case 0x18:
+			iRel += 1; // opcode is 1 byte long! 
+			if((cRAM[iPC+1] & 0x80) == 0x80)
+				iRel -= 256;
+				
+			sCPU->iPC += iRel; 
+			iAdd = 0;
+			printf("JR\t%02x\t", cRAM[iPC+1]);
+			break;
+		
 		case 0x20:
+			iRel +=2; // opcode is 2 bytes long!
 			if((sCPU->F & 0x80) == 0) {
 				if((cRAM[iPC+1] & 0x80) == 0x80)
-					iRel -= 254; // opcode is 2 bytes long!
+					iRel -= 256;
 				
 				sCPU->iPC += iRel; 
 				iAdd = 0;
@@ -379,6 +402,11 @@ int iLD   (sState *sCPU, uchar *cRAM) {
 			iRet = 2;
 			break;
 
+		case 0xE2: // LD	(FF00+C), A
+			sCPU->A= 0xFF00 + sCPU->C;
+			printf("LD\t$C, A\t");
+			break;
+
 		case 0xEA: // LD	(nnnn), A
 			cRAM[cRAM[iPC+2] << 8 ^ cRAM[iPC + 1]] = sCPU->A;
 			printf("LD\t$%02x%02x, A", cRAM[iPC+2], cRAM[iPC+1]);
@@ -405,8 +433,14 @@ int iLDI  (sState *sCPU, uchar *cRAM) {
 	switch(cRAM[iPC]) {
 		case 0x22: // LDI	(HL), A
 			cRAM[(sCPU->H << 8) ^ sCPU->L] = sCPU->A;
-						
 			printf("LDI\t$HL, A\t");
+			break;
+			
+		case 0x2A: // LDI	A, (HL)
+			sCPU->A = cRAM[(sCPU->H << 8) ^ sCPU->L];
+			printf("LDI\tA, $HL\t");
+			break;
+			
 	}
 	sCPU->L++;
 	if(sCPU->L == 0)
@@ -622,8 +656,9 @@ int iRST  (sState *sCPU, uchar *cRAM) {
 	}
 	
 	// Push the calling address onto the stack
-	cRAM[iSP-2] = (iPC >> 8) & 255;
-	cRAM[iSP-1] = iPC & 255;
+	iPC+=1;
+	cRAM[iSP-1] = (iPC >> 8) & 255;
+	cRAM[iSP-2] = iPC & 255;
 			
 	sCPU->iPC = cJP;
 	sCPU->iSP-=2;
@@ -717,9 +752,11 @@ int iClock(sState *sCPU, uchar *cRAM) {
 		case 0xFB: iAdd = iEI  (sCPU, cRAM); break;
 		case 0x03:
 		case 0x04: 
+		case 0x0C: 
 		case 0x2C: iAdd = iINC (sCPU, cRAM); break;
 		case 0xC3: 
 		case 0xE9: iAdd = iJP  (sCPU, cRAM); break;
+		case 0x18: 
 		case 0x20: iAdd = iJR  (sCPU, cRAM); break;
 		case 0x01:
 		case 0x02:
@@ -732,9 +769,11 @@ int iClock(sState *sCPU, uchar *cRAM) {
 		case 0x78:
 		case 0x7E:
 		case 0xE0:
+		case 0xE2:
 		case 0xEA:
 		case 0xF0: iAdd = iLD  (sCPU, cRAM); break;
-		case 0x22: iAdd = iLDI (sCPU, cRAM); break;
+		case 0x22:
+		case 0x2A: iAdd = iLDI (sCPU, cRAM); break;
 		case 0x00: iAdd = iNOP (sCPU, cRAM); break;
 		case 0xB0:
 		case 0xB1:
