@@ -28,16 +28,16 @@ You can contact the author via electronic mail by the address
 #include "gb.h"
 
 int iFlag(sState *sCPU, int Z, int N, int H, int C) {
-	if(Z!=2) 
+	if(Z<2) 
 		sCPU->F = (sCPU->F & 0x70) ^ (Z << 7);
 	
-	if(N!=2) 
+	if(N<2) 
 		sCPU->F = (sCPU->F & 0xB0) ^ (N << 6);
 	
-	if(H!=2) 
+	if(H<2) 
 		sCPU->F = (sCPU->F & 0xD0) ^ (H << 5);
 	
-	if(C!=2) 
+	if(C<2) 
 		sCPU->F = (sCPU->F & 0xE0) ^ (C << 4);
 
 	sCPU->F &= 0xF0;
@@ -113,9 +113,62 @@ int iCALL (sState *sCPU, uchar *cRAM){
 }
 
 int iCCF  (sState *sCPU, uchar *cRAM);
-int iCP   (sState *sCPU, uchar *cRAM);
+
+int iCP   (sState *sCPU, uchar *cRAM) {
+	int iPC = sCPU->iPC;
+	int iZ=0, iH=0, iC=0;
+	uchar uCP = 0;
+
+	switch(cRAM[iPC]) {
+		case 0xB8: 
+			uCP = sCPU->B;
+			printf("CP\tB\t");
+			break;
+
+		case 0xB9: 
+			uCP = sCPU->C;
+			printf("CP\tC\t");
+			break;
+
+		case 0xBA: 
+			uCP = sCPU->D;
+			printf("CP\tD\t");
+			break;
+
+		case 0xBB: 
+			uCP = sCPU->E;
+			printf("CP\tE\t");
+			break;
+
+		case 0xBC: 
+			uCP = sCPU->H;
+			printf("CP\tH\t");
+			break;
+
+		case 0xBD: 
+			uCP = sCPU->L;
+			printf("CP\tL\t");
+			break;
+
+		case 0xBF: 
+			uCP = sCPU->A;
+			printf("CP\tA\t");
+			break;
+
+	}
+	
+	if(sCPU->A == uCP) 
+		iZ = 1;
+	if(sCPU->A < uCP)
+		iC = 1;
+
+	iFlag(sCPU, iZ, 1, iH, iC);
+	return 1;
+}
+
 int iCPL  (sState *sCPU, uchar *cRAM);
 int iDAA  (sState *sCPU, uchar *cRAM);
+
 int iDEC  (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
 	int iRet = 1;
@@ -228,7 +281,22 @@ int iJP   (sState *sCPU, uchar *cRAM) {
 	return iRet;	
 }
 
-int iJR   (sState *sCPU, uchar *cRAM);
+int iJR   (sState *sCPU, uchar *cRAM) {
+	int iPC = sCPU->iPC;
+	int iAdd = 1;
+
+	switch(cRAM[iPC]) {
+		case 0x20:
+			if((sCPU->F & 0x80) == 0) {
+				sCPU->iPC += cRAM[iPC+1];
+				iAdd = 0;
+			}
+			printf("JR\tNZ, %02x\t", cRAM[iPC+1]);
+			break;
+	}
+
+	return iAdd;
+}
 
 int iLD   (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
@@ -333,22 +401,82 @@ int iNOP  (sState *sCPU, uchar *cRAM) {
 int iOR   (sState *sCPU, uchar *cRAM);
 
 int iPOP  (sState *sCPU, uchar *cRAM) {
+	int iPC = sCPU->iPC;
+	int iSP = sCPU->iSP;
+	
+	int iHVal = cRAM[iSP];
+	int iLVal = cRAM[iSP+1];
+	sCPU->iSP+=2;
+
+	switch(cRAM[iPC]) {
+		case 0xC1:
+			sCPU->B = iHVal;
+			sCPU->C = iLVal;
+			printf("POP\tBC\t");
+			break;
+			
+		case 0xD1:
+			sCPU->D = iHVal;
+			sCPU->E = iLVal;
+			printf("POP\tDE\t");
+			break;
+			
+		case 0xE1:
+			sCPU->H = iHVal;
+			sCPU->L = iLVal;
+			printf("POP\tHL\t");
+			break;
+			
+		case 0xF1:
+			sCPU->A = iHVal;
+			sCPU->F = iLVal;
+			printf("POP\tAF\t");
+			break;
+	}
+	
 	return 1;
 }
 
-/*
 int iPUSH (sState *sCPU, uchar *cRAM) {
-	int iSP = sCPU->iSP;
 	int iPC = sCPU->iPC;
+	int iSP = sCPU->iSP;
+	uchar iHVal = 0, iLVal = 0;
 
-	cRAM[iSP-2] = cRAM[iPC+2];
-	cRAM[iSP-1] = cRAM[iPC+1];
+	switch(cRAM[iPC]) {
+		case 0xC5:
+			iHVal = sCPU->B;
+			iLVal = sCPU->C;
+			printf("PUSH\tBC\t");
+			break;
+			
+		case 0xD5:
+			iHVal = sCPU->D;
+			iLVal = sCPU->E;
+			printf("PUSH\tDE\t");
+			break;
+			
+		case 0xE5:
+			iHVal = sCPU->H;
+			iLVal = sCPU->L;
+			printf("PUSH\tHL\t");
+			break;
+			
+		case 0xF5:
+			iHVal = sCPU->A;
+			iLVal = sCPU->F;
+			printf("PUSH\tAF\t");
+			break;
+			
+	}
+	
+	
+	cRAM[iSP-2] = iHVal;
+	cRAM[iSP-1] = iLVal;
 
 	sCPU->iSP-=2;
 
 	return 1;
 }
-*/
 
 int iRES  (sState *sCPU, uchar *cRAM);
 
@@ -459,6 +587,13 @@ int iClock(sState *sCPU, uchar *cRAM) {
 		case 0x81: iAdd = iADD (sCPU, cRAM); break;
 		case 0xE6: iAdd = iAND (sCPU, cRAM); break;
 		case 0xCD: iAdd = iCALL(sCPU, cRAM); break;
+		case 0xB8:
+		case 0xB9:
+		case 0xBA:
+		case 0xBB:
+		case 0xBC:
+		case 0xBD:
+		case 0xBF: iAdd = iCP  (sCPU, cRAM); break;
 		case 0x05: 
 		case 0x3D: iAdd = iDEC (sCPU, cRAM); break;
 		case 0xF3: iAdd = iDI  (sCPU, cRAM); break;
@@ -468,6 +603,7 @@ int iClock(sState *sCPU, uchar *cRAM) {
 		case 0x2C: iAdd = iINC (sCPU, cRAM); break;
 		case 0xC3: 
 		case 0xE9: iAdd = iJP  (sCPU, cRAM); break;
+		case 0x20: iAdd = iJR  (sCPU, cRAM); break;
 		case 0x01:
 		case 0x02:
 		case 0x06:
@@ -482,6 +618,14 @@ int iClock(sState *sCPU, uchar *cRAM) {
 		case 0xF0: iAdd = iLD  (sCPU, cRAM); break;
 		case 0x22: iAdd = iLDI (sCPU, cRAM); break;
 		case 0x00: iAdd = iNOP (sCPU, cRAM); break;
+		case 0xC1:
+		case 0xD1:
+		case 0xE1:
+		case 0xF1: iAdd = iPOP (sCPU, cRAM); break;
+		case 0xC5:
+		case 0xD5:
+		case 0xE5:
+		case 0xF5: iAdd = iPUSH(sCPU, cRAM); break;
 		case 0xC8:
 		case 0xC9: iAdd = iRET (sCPU, cRAM); break;
 		case 0xC7:
