@@ -116,7 +116,36 @@ int iCCF  (sState *sCPU, uchar *cRAM);
 int iCP   (sState *sCPU, uchar *cRAM);
 int iCPL  (sState *sCPU, uchar *cRAM);
 int iDAA  (sState *sCPU, uchar *cRAM);
-int iDEC  (sState *sCPU, uchar *cRAM);
+int iDEC  (sState *sCPU, uchar *cRAM) {
+	int iPC = sCPU->iPC;
+	int iRet = 1;
+	int iZ=0, iN =1, iH=0;
+
+	switch(cRAM[iPC]) {
+		case 0x05: // DEC	B
+			sCPU->B--;
+			if(sCPU->B == 0)
+				iZ = 1;
+			if(sCPU->B == 0x0F)
+				iH = 1;
+			
+			printf("DEC\tB\t");
+			break;
+		
+		case 0x3D: // DEC	A
+			sCPU->A--;
+			if(sCPU->A == 0)
+				iZ = 1;
+			if(sCPU->A == 0x0F)
+				iH = 1;
+			
+			printf("DEC\tA\t");
+			break;
+	}
+
+	iFlag(sCPU, iZ, iN, iH, 2);
+	return iRet;
+}
 
 int iDI   (sState *sCPU, uchar *cRAM) {
 	sCPU->iEI = 0;
@@ -223,6 +252,13 @@ int iLD   (sState *sCPU, uchar *cRAM) {
 			iRet = 2;
 			printf("LD\tB, %02x\t", sCPU->B);
 			break;
+		
+		case 0x21: // LD	HL, nnnn
+			sCPU->H = cRAM[iPC+2];
+			sCPU->L = cRAM[iPC+1];
+			iRet = 3;
+			printf("LD\tHL, %02x%02x", sCPU->H, sCPU->L);
+			break;
 
 		case 0x31: // LD	SP, nnnn
 			sCPU->iSP = (cRAM[iPC+2] << 8) ^ cRAM[iPC+1];
@@ -235,10 +271,26 @@ int iLD   (sState *sCPU, uchar *cRAM) {
 			iRet = 2;
 			printf("LD\tA, %02x\t", sCPU->A);
 			break;
+			
+		case 0x40: // LD	B, B
+			sCPU->B = sCPU->B;
+			printf("LD\tB, B\t");
+			break;
+
+		case 0x5B: // LD	E, E
+			sCPU->E = sCPU->E;
+			printf("LD\tE, E\t");
+			break;
 
 		case 0x7E: // LD	A, (HL)
 			sCPU->A = cRAM[(sCPU->H << 8) ^ sCPU->L];
 			printf("LD\tA, $HL\t");
+			break;
+
+		case 0xE0: // LD	(FF00+nn), A
+			cRAM[0xFF00 + cRAM[iPC + 1]] = sCPU->A;
+			printf("LD\t$ff%02x, A", cRAM[iPC+1]);
+			iRet = 2;
 			break;
 
 		case 0xEA: // LD	(nnnn), A
@@ -404,66 +456,34 @@ int iClock(sState *sCPU, uchar *cRAM) {
 	printf("%04x\t%02x%02x%02x\t",iPC, cRAM[iPC], cRAM[iPC+1], cRAM[iPC+2]);
 
 	switch(cRAM[iPC]) {
-		// ADD
-		case 0x81: iAdd = iADD(sCPU, cRAM);
-			break;
-
-		// AND
-		case 0xE6: iAdd = iAND(sCPU, cRAM);
-			break;
-
-		// CALL
-		case 0xCD: iAdd = iCALL(sCPU, cRAM);
-			break;
-
-		// DEC
-		case 0x05: // DEC	B
-			sCPU->B--;
-			printf("DEC\tB\t");
-			break;
-
-		case 0xF3: iAdd = iDI(sCPU, cRAM);
-			break;
-	
-		case 0xFB: iAdd = iEI(sCPU, cRAM);
-			break;
-		
-		// INC
+		case 0x81: iAdd = iADD (sCPU, cRAM); break;
+		case 0xE6: iAdd = iAND (sCPU, cRAM); break;
+		case 0xCD: iAdd = iCALL(sCPU, cRAM); break;
+		case 0x05: 
+		case 0x3D: iAdd = iDEC (sCPU, cRAM); break;
+		case 0xF3: iAdd = iDI  (sCPU, cRAM); break;
+		case 0xFB: iAdd = iEI  (sCPU, cRAM); break;
 		case 0x03:
 		case 0x04: 
-		case 0x2c: iAdd = iINC(sCPU, cRAM);
-			break;
-		
-		// JP
+		case 0x2C: iAdd = iINC (sCPU, cRAM); break;
 		case 0xC3: 
-		case 0xE9: iAdd = iJP(sCPU, cRAM);
-			break;
-
-		// LD
+		case 0xE9: iAdd = iJP  (sCPU, cRAM); break;
 		case 0x01:
 		case 0x02:
 		case 0x06:
+		case 0x21:
 		case 0x31:
 		case 0x3E:
+		case 0x40:
+		case 0x5B:
 		case 0x7E:
+		case 0xE0:
 		case 0xEA:
-		case 0xF0: iAdd = iLD(sCPU, cRAM);
-			break;
-
-		// LDI
-		case 0x22: iAdd = iLDI(sCPU, cRAM);
-			break;
-		
-		// NOP
-		case 0x00: iAdd = iNOP(sCPU, cRAM);
-			break;
-
-		// RET
+		case 0xF0: iAdd = iLD  (sCPU, cRAM); break;
+		case 0x22: iAdd = iLDI (sCPU, cRAM); break;
+		case 0x00: iAdd = iNOP (sCPU, cRAM); break;
 		case 0xC8:
-		case 0xC9: iAdd = iRET(sCPU, cRAM);
-			break;
-
-		// RST
+		case 0xC9: iAdd = iRET (sCPU, cRAM); break;
 		case 0xC7:
 		case 0xCF:
 		case 0xD7:
@@ -471,8 +491,7 @@ int iClock(sState *sCPU, uchar *cRAM) {
 		case 0xE7:
 		case 0xEF:
 		case 0xF7:		
-		case 0xFF: iAdd = iRST(sCPU, cRAM);
-			break;
+		case 0xFF: iAdd = iRST (sCPU, cRAM); break;
 
 		default: printf("\t[%02x]\t", cRAM[iPC]);
 			break;
