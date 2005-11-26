@@ -250,7 +250,7 @@ int main(int argc, char *argv[]) {
 	
 	printf("dumping core... ");
 	iCoreDump(cRAM, "dump.bin");
-	printf("done.\n");
+	printf("done.\t\t |     AF   BC   DE   HL\n");
 
 	// execute the beginning of the ROM
 	for(i=0;i<iNumOpcodes;i++)

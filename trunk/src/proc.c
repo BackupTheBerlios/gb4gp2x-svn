@@ -103,10 +103,11 @@ int iCALL (sState *sCPU, uchar *cRAM){
 	}
 
 	sCPU->iPC=(cHB<<8)^cLB;
+	iPC+=3;
 
 	// Push the calling address onto the stack
-	cRAM[iSP-2] = (iPC>>8) & 255;
-	cRAM[iSP-1] = iPC & 255;
+	cRAM[iSP-1] = (iPC>>8) & 255;
+	cRAM[iSP-2] = iPC & 255;
 	sCPU->iSP-=2;
 
 	return 0;
@@ -184,7 +185,15 @@ int iDEC  (sState *sCPU, uchar *cRAM) {
 			
 			printf("DEC\tB\t");
 			break;
-		
+	
+		case 0x0B: // DEC	BC
+			sCPU->C--;
+			if(sCPU->C == 0xFF)
+				sCPU->B--;
+			iZ = iN = iH = 2;
+			printf("DEC\tBC\t");
+			break;
+					
 		case 0x3D: // DEC	A
 			sCPU->A--;
 			if(sCPU->A == 0)
@@ -283,12 +292,16 @@ int iJP   (sState *sCPU, uchar *cRAM) {
 
 int iJR   (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
-	int iAdd = 1;
+	int iRel = cRAM[iPC+1];
+	int iAdd = 2;
 
 	switch(cRAM[iPC]) {
 		case 0x20:
 			if((sCPU->F & 0x80) == 0) {
-				sCPU->iPC += cRAM[iPC+1];
+				if((cRAM[iPC+1] & 0x80) == 0x80)
+					iRel -= 254; // opcode is 2 bytes long!
+				
+				sCPU->iPC += iRel; 
 				iAdd = 0;
 			}
 			printf("JR\tNZ, %02x\t", cRAM[iPC+1]);
@@ -350,6 +363,11 @@ int iLD   (sState *sCPU, uchar *cRAM) {
 			printf("LD\tE, E\t");
 			break;
 
+		case 0x78: // LD	A, B
+			sCPU->A = sCPU->B;
+			printf("LD\tA, B\t");
+			break;
+			
 		case 0x7E: // LD	A, (HL)
 			sCPU->A = cRAM[(sCPU->H << 8) ^ sCPU->L];
 			printf("LD\tA, $HL\t");
@@ -382,14 +400,17 @@ int iLDD  (sState *sCPU, uchar *cRAM);
 
 int iLDI  (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
-	int iRet = 3;
+	int iRet = 1;
 	
 	switch(cRAM[iPC]) {
 		case 0x22: // LDI	(HL), A
 			cRAM[(sCPU->H << 8) ^ sCPU->L] = sCPU->A;
-			sCPU->A++;
+						
 			printf("LDI\t$HL, A\t");
 	}
+	sCPU->L++;
+	if(sCPU->L == 0)
+		sCPU->H++;
 
 	return iRet;
 };
@@ -398,14 +419,61 @@ int iNOP  (sState *sCPU, uchar *cRAM) {
 	printf("NOP\t\t");
 	return 1;
 }
-int iOR   (sState *sCPU, uchar *cRAM);
+int iOR   (sState *sCPU, uchar *cRAM) {
+	int iPC = sCPU->iPC;
+	int iZ=0;
+
+	switch(cRAM[iPC]) {
+		case 0xB0:
+			sCPU->A |= sCPU->B;
+			printf("OR\tB\t");
+			break;
+			
+		case 0xB1:
+			sCPU->A |= sCPU->C;
+			printf("OR\tC\t");
+			break;
+			
+		case 0xB2:
+			sCPU->A |= sCPU->D;
+			printf("OR\tD\t");
+			break;
+			
+		case 0xB3:
+			sCPU->A |= sCPU->E;
+			printf("OR\tE\t");
+			break;
+			
+		case 0xB4:
+			sCPU->A |= sCPU->H;
+			printf("OR\tH\t");
+			break;
+			
+		case 0xB5:
+			sCPU->A |= sCPU->L;
+			printf("OR\tL\t");
+			break;
+			
+		case 0xB7:
+			sCPU->A |= sCPU->A;
+			printf("OR\tA\t");
+			break;
+			
+	}
+
+	if (sCPU->A == 0)
+		iZ = 1;
+
+	iFlag(sCPU, iZ, 0,0,0);
+	return 1;
+}
 
 int iPOP  (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
 	int iSP = sCPU->iSP;
 	
-	int iHVal = cRAM[iSP];
-	int iLVal = cRAM[iSP+1];
+	int iLVal = cRAM[iSP];
+	int iHVal = cRAM[iSP+1];
 	sCPU->iSP+=2;
 
 	switch(cRAM[iPC]) {
@@ -470,8 +538,8 @@ int iPUSH (sState *sCPU, uchar *cRAM) {
 	}
 	
 	
-	cRAM[iSP-2] = iHVal;
-	cRAM[iSP-1] = iLVal;
+	cRAM[iSP-1] = iHVal;
+	cRAM[iSP-2] = iLVal;
 
 	sCPU->iSP-=2;
 
@@ -487,20 +555,20 @@ int iRET  (sState *sCPU, uchar *cRAM) {
 	switch(cRAM[iPC]) {
 		case 0xC8:
 			if((sCPU->A & 0x80) == 0x80) {
-				sCPU->iPC=(cRAM[iSP] << 8) ^ cRAM[iSP+1];
+				sCPU->iPC=(cRAM[iSP+1] << 8) ^ cRAM[iSP];
 				sCPU->iSP+=2;
 			}
 			printf("RET\tZ\t");
 			break;
 		
 		case 0xC9:
-			sCPU->iPC=(cRAM[iSP] << 8) ^ cRAM[iSP+1];
+			sCPU->iPC=(cRAM[iSP+1] << 8) ^ cRAM[iSP];
 			sCPU->iSP+=2;
 			printf("RET\t\t");
 			break;
 
 	}
-	return 1;
+	return 0;
 }
 
 int iRETI (sState *sCPU, uchar *cRAM);
@@ -568,12 +636,60 @@ int iSCF  (sState *sCPU, uchar *cRAM);
 int iSET  (sState *sCPU, uchar *cRAM);
 int iSTOP (sState *sCPU, uchar *cRAM);
 int iSUB  (sState *sCPU, uchar *cRAM);
-int iXOR  (sState *sCPU, uchar *cRAM);
 
-int iDebugMsg(sState *sCPU) {
-	printf(" | R: %02x%02x %02x%02x %02x%02x %02x%02x PC: %04x SP: %04x %01x\n",
-			sCPU->A, sCPU->F, sCPU->B, sCPU->C, sCPU->D, sCPU->E,
-			sCPU->H, sCPU->L, sCPU->iPC, sCPU->iSP, sCPU->iEI);
+int iXOR  (sState *sCPU, uchar *cRAM) {
+	int iPC = sCPU->iPC;
+	int iZ=0;
+
+	switch(cRAM[iPC]) {
+		case 0xA8:
+			sCPU->A ^= sCPU->B;
+			printf("XOR\tB\t");
+			break;
+			
+		case 0xA9:
+			sCPU->A ^= sCPU->C;
+			printf("XOR\tC\t");
+			break;
+			
+		case 0xAA:
+			sCPU->A ^= sCPU->D;
+			printf("XOR\tD\t");
+			break;
+			
+		case 0xAB:
+			sCPU->A ^= sCPU->E;
+			printf("XOR\tE\t");
+			break;
+			
+		case 0xAC:
+			sCPU->A ^= sCPU->H;
+			printf("XOR\tH\t");
+			break;
+			
+		case 0xAD:
+			sCPU->A ^= sCPU->L;
+			printf("XOR\tL\t");
+			break;
+			
+		case 0xAF:
+			sCPU->A ^= sCPU->A;
+			printf("XOR\tA\t");
+			break;
+			
+	}
+
+	if (sCPU->A == 0)
+		iZ = 1;
+
+	iFlag(sCPU, iZ, 0,0,0);
+	return 1;
+}
+
+int iDebugMsg(sState *sCPU, uchar *cRAM) {
+	printf(" | R: %02x%02x %02x%02x %02x%02x %02x%02x PC: %04x SP: %02x%02x %01x\n",
+			sCPU->A, sCPU->F, sCPU->B, sCPU->C, sCPU->D, sCPU->E, sCPU->H, sCPU->L,
+			sCPU->iPC, cRAM[sCPU->iSP+1], cRAM[sCPU->iSP], sCPU->iEI);
 					
 	return 0;
 }
@@ -595,6 +711,7 @@ int iClock(sState *sCPU, uchar *cRAM) {
 		case 0xBD:
 		case 0xBF: iAdd = iCP  (sCPU, cRAM); break;
 		case 0x05: 
+		case 0x0B:
 		case 0x3D: iAdd = iDEC (sCPU, cRAM); break;
 		case 0xF3: iAdd = iDI  (sCPU, cRAM); break;
 		case 0xFB: iAdd = iEI  (sCPU, cRAM); break;
@@ -612,12 +729,20 @@ int iClock(sState *sCPU, uchar *cRAM) {
 		case 0x3E:
 		case 0x40:
 		case 0x5B:
+		case 0x78:
 		case 0x7E:
 		case 0xE0:
 		case 0xEA:
 		case 0xF0: iAdd = iLD  (sCPU, cRAM); break;
 		case 0x22: iAdd = iLDI (sCPU, cRAM); break;
 		case 0x00: iAdd = iNOP (sCPU, cRAM); break;
+		case 0xB0:
+		case 0xB1:
+		case 0xB2:
+		case 0xB3:
+		case 0xB4:
+		case 0xB5:
+		case 0xB7: iAdd = iOR  (sCPU, cRAM); break;
 		case 0xC1:
 		case 0xD1:
 		case 0xE1:
@@ -636,12 +761,20 @@ int iClock(sState *sCPU, uchar *cRAM) {
 		case 0xEF:
 		case 0xF7:		
 		case 0xFF: iAdd = iRST (sCPU, cRAM); break;
+		case 0xA8:
+		case 0xA9:
+		case 0xAA:
+		case 0xAB:
+		case 0xAC:
+		case 0xAD:
+		case 0xAF: iAdd = iXOR (sCPU, cRAM); break;
 
 		default: printf("\t[%02x]\t", cRAM[iPC]);
 			break;
-	}			
-	iDebugMsg(sCPU);
-	
+	}
+
+	sCPU->F &= 0xF0;
+	iDebugMsg(sCPU, cRAM);
 	sCPU->iPC+=iAdd;
 
 	return iAdd;
