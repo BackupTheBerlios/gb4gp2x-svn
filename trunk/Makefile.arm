@@ -8,10 +8,13 @@ CC=			arm-unknown-linux-gnu-gcc
 default:
 	make $(BIN)/gb4gp2x
 	
-$(BIN)/gb4gp2x: $(OBJ)/proc.o $(SRC)/boot.c
+$(BIN)/gb4gp2x: $(OBJ)/opcodes.o $(OBJ)/proc.o $(SRC)/boot.c
 	$(CC) $(CCFLAGS) -o $@ $^
 	
 $(OBJ)/proc.o: $(SRC)/proc.c
+	$(CC) $(CCFLAGS) -c -o $@ $^
+
+$(OBJ)/opcodes.o: $(SRC)/opcodes.c
 	$(CC) $(CCFLAGS) -c -o $@ $^
 
 install: $(BIN)/gb4gp2x

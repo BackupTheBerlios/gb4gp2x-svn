@@ -29,6 +29,7 @@ You can contact the author via electronic mail by the address
 
 int iFlag (sState *sCPU, int Z, int N, int H, int C);
 
+// These will be moved to opcodes.h "when it's done"
 int iADC  (sState *sCPU, char *cRAM);
 int iADD  (sState *sCPU, char *cRAM);
 int iAND  (sState *sCPU, char *cRAM);
@@ -39,23 +40,15 @@ int iCP   (sState *sCPU, char *cRAM);
 int iCPL  (sState *sCPU, char *cRAM);
 int iDAA  (sState *sCPU, char *cRAM);
 int iDEC  (sState *sCPU, char *cRAM);
-int iDI   (sState *sCPU, char *cRAM);
-int iEI   (sState *sCPU, char *cRAM);
 int iHALT (sState *sCPU, char *cRAM);
 int iINC  (sState *sCPU, char *cRAM);
 int iJP   (sState *sCPU, char *cRAM);
 int iJR   (sState *sCPU, char *cRAM);
 int iLD   (sState *sCPU, char *cRAM);
-int iLDD  (sState *sCPU, char *cRAM);
-int iLDI  (sState *sCPU, char *cRAM);
-int iNOP  (sState *sCPU, char *cRAM);
 int iOR   (sState *sCPU, char *cRAM);
-int iPOP  (sState *sCPU, char *cRAM);
-int iPUSH (sState *sCPU, char *cRAM); 
 int iRES  (sState *sCPU, char *cRAM);
 int iRET  (sState *sCPU, char *cRAM);
 int iRETI (sState *sCPU, char *cRAM);
-int iRST  (sState *sCPU, char *cRAM);
 int iSBC  (sState *sCPU, char *cRAM);
 int iSCF  (sState *sCPU, char *cRAM);
 int iSET  (sState *sCPU, char *cRAM);
