@@ -27,15 +27,7 @@ You can contact the author via electronic mail by the address
 #include <stdio.h>
 #include "opcodes.h"
 #include "gb.h"
-/*
-#define FLAG_Z 0x80
-#define FLAG_N 0x40
-#define FLAG_H 0x20
-#define FLAG_C 0x10
 
-#define SETFLAG(a) sCPU->F |= (a)
-#define DELFLAG(a) sCPU->F &= ~(a)
-*/
 // These opcodes are not yet fully implemented.
 // Will be moved to opcodes.c when ready.
 int iADC  (sState *sCPU, uchar *cRAM); 
@@ -166,15 +158,14 @@ int iCP   (sState *sCPU, uchar *cRAM) {
 	}
 
 	// Edit Flags
-	DELFLAG(FLAG_Z | FLAG_N | FLAG_H | FLAG_C);
+	DELFLAG(FLAG_Z FLAG_H | FLAG_C);
+	SETFLAG(FLAG_N);
 	
 	if(sCPU->A == uCP) 
 		SETFLAG(FLAG_Z);
 
 	if(sCPU->A < uCP)
 		SETFLAG(FLAG_C);
-
-	SETFLAG(FLAG_N);
 
 	return 1;
 }
@@ -234,12 +225,9 @@ int iDEC  (sState *sCPU, uchar *cRAM) {
 			break;
 	}
 
-	// Set Flags
+	// Edit Flags
 	DELFLAG(FLAG_Z | FLAG_N | FLAG_H);
-
-	SETFLAG(iZ);
-	SETFLAG(iN);
-	SETFLAG(iH);
+	SETFLAG(iZ, iN, iH);
 	
 	return iRet;
 }
@@ -302,12 +290,11 @@ int iINC  (sState *sCPU, uchar *cRAM) {
 			break;
 	}
 	
-	// Set Flags
+	// Edit Flags
 	DELFLAG(FLAG_Z | FLAG_N | FLAG_H);
 	SETFLAG(iZ | iN | iH);
 	
 	return iRet;
-	
 }
 
 // Jump to a new address
@@ -558,8 +545,8 @@ int iOR   (sState *sCPU, uchar *cRAM) {
 			
 	}
 
-	// Set Flags
-	DELFLAG(FLAG_N | FLAG_H | FLAG_C);
+	// Edit Flags
+	DELFLAG(FLAG_Z | FLAG_N | FLAG_H | FLAG_C);
 	
 	// Determine whether the 
 	// Zero-Flag should be set
@@ -653,11 +640,11 @@ int iXOR  (sState *sCPU, uchar *cRAM) {
 			
 	}
 
-	// Determine whether the
-	// Zero-Flag should be set
-
 	// Edit Flags
 	DELFLAG(FLAG_Z | FLAG_N | FLAG_H | FLAG_C);
+	
+	// Determine whether the
+	// Zero-Flag should be set
 	if(sCPU->A == 0)
 		SETFLAG(FLAG_Z);
 
