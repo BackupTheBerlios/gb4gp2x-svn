@@ -22,6 +22,10 @@ USA
 
 You can contact the author via electronic mail by the address
 'nc-wolterma4@netcologne.de'.
+
+This file includes suggestions from Alexander Christmann, namely
+the macros for setting and unsetting flags inside the F register.
+He can be contacted at 'christmann@datenwelt.net'
 */
 
 #ifndef _GB_H_

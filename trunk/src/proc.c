@@ -48,11 +48,12 @@ int iADD  (sState *sCPU, uchar *cRAM) {
 	// Edit Flags
 	DELFLAG(FLAG_Z | FLAG_N | FLAG_H | FLAG_C);
 	
-	if(sCPU->A == 0)
+	if(sCPU->A == 0) {
 		SETFLAG(FLAG_Z);
-	
-	if((sCPU->A >= 0x10) && (iOldA < 0x10))
-		SETFLAG(FLAG_H);
+	} else {
+		if((sCPU->A >= 0x10) && (iOldA < 0x10))
+			SETFLAG(FLAG_H);
+	}
 			
 	if(sCPU->A < iOldA)
 		SETFLAG(FLAG_C);
