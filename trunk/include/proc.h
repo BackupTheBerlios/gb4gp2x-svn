@@ -27,8 +27,6 @@ You can contact the author via electronic mail by the address
 #ifndef _PROC_H_
 #define _PROC_H_
 
-int iFlag (sState *sCPU, int Z, int N, int H, int C);
-
 // These will be moved to opcodes.h "when it's done"
 int iADC  (sState *sCPU, char *cRAM);
 int iADD  (sState *sCPU, char *cRAM);

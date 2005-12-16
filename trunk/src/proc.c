@@ -27,56 +27,44 @@ You can contact the author via electronic mail by the address
 #include <stdio.h>
 #include "opcodes.h"
 #include "gb.h"
+/*
+#define FLAG_Z 0x80
+#define FLAG_N 0x40
+#define FLAG_H 0x20
+#define FLAG_C 0x10
 
-// Set the Flags inside the F-Register
-// An argument <2 means "Set this Value",
-// An argument ==2 means "Don't touch this Value"
-int iFlag(sState *sCPU, int Z, int N, int H, int C) {
-	if(Z<2) 
-		sCPU->F = (sCPU->F & 0x70) ^ (Z << 7);
-	
-	if(N<2) 
-		sCPU->F = (sCPU->F & 0xB0) ^ (N << 6);
-	
-	if(H<2) 
-		sCPU->F = (sCPU->F & 0xD0) ^ (H << 5);
-	
-	if(C<2) 
-		sCPU->F = (sCPU->F & 0xE0) ^ (C << 4);
-
-	sCPU->F &= 0xF0;
-
-	return 1;
-}
-
+#define SETFLAG(a) sCPU->F |= (a)
+#define DELFLAG(a) sCPU->F &= ~(a)
+*/
 // These opcodes are not yet fully implemented.
-// Will be moved to opcodes.c when done.
+// Will be moved to opcodes.c when ready.
 int iADC  (sState *sCPU, uchar *cRAM); 
 
 // Arithmetic addition operation
 int iADD  (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
-	int iZ = 2, iH = 0, iC = 0;
-	int iOldA;
+	int iOldA = sCPU->A;
 	
 	switch(cRAM[iPC]) {
 		// ADD	A, C
 		case 0x81:
-			iOldA = sCPU->A;
 			sCPU->A += sCPU->C;
-			iZ = 0;
 			
-			if(sCPU->A == 0)
-				iZ = 1;
-			if((sCPU->A >= 0x10) && (iOldA < 0x10))
-				iH = 1;
-			if(sCPU->A < iOldA)
-				iC = 1;
-					
 			printf("ADD\tA, C\t");
 	}
-
-	iFlag(sCPU, iZ, 0, iH, iC);
+	
+	// Edit Flags
+	DELFLAG(FLAG_Z | FLAG_N | FLAG_H | FLAG_C);
+	
+	if(sCPU->A == 0)
+		SETFLAG(FLAG_Z);
+	
+	if((sCPU->A >= 0x10) && (iOldA < 0x10))
+		SETFLAG(FLAG_H);
+			
+	if(sCPU->A < iOldA)
+		SETFLAG(FLAG_C);
+					
 	return 1;	
 }
 
@@ -130,7 +118,6 @@ int iCCF  (sState *sCPU, uchar *cRAM);
 // compare value with register A
 int iCP   (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
-	int iZ=0, iH=0, iC=0;
 	uchar uCP = 0;
 
 	switch(cRAM[iPC]) {
@@ -178,15 +165,17 @@ int iCP   (sState *sCPU, uchar *cRAM) {
 
 	}
 
-	// Determine whether Z and C
-	// Flags should be set
+	// Edit Flags
+	DELFLAG(FLAG_Z | FLAG_N | FLAG_H | FLAG_C);
+	
 	if(sCPU->A == uCP) 
-		iZ = 1;
-	if(sCPU->A < uCP)
-		iC = 1;
+		SETFLAG(FLAG_Z);
 
-	// Set Flags
-	iFlag(sCPU, iZ, 1, iH, iC);
+	if(sCPU->A < uCP)
+		SETFLAG(FLAG_C);
+
+	SETFLAG(FLAG_N);
+
 	return 1;
 }
 
@@ -197,16 +186,16 @@ int iDAA  (sState *sCPU, uchar *cRAM);
 int iDEC  (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
 	int iRet = 1;
-	int iZ=0, iN =1, iH=0;
+	int iZ=0, iN =FLAG_N, iH=0;
 
 	switch(cRAM[iPC]) {
 		// DEC	B
 		case 0x05:
 			sCPU->B--;
 			if(sCPU->B == 0)
-				iZ = 1;
+				iZ = FLAG_Z;
 			if(sCPU->B == 0x0F)
-				iH = 1;
+				iH = FLAG_H;
 			
 			printf("DEC\tB\t");
 			break;
@@ -216,7 +205,9 @@ int iDEC  (sState *sCPU, uchar *cRAM) {
 			sCPU->C--;
 			if(sCPU->C == 0xFF)
 				sCPU->B--;
-			iZ = iN = iH = 2;
+			iZ = sCPU->F & FLAG_Z;
+			iN = sCPU->F & FLAG_N;
+			iH = sCPU->F & FLAG_H;
 			printf("DEC\tBC\t");
 			break;
 		
@@ -224,9 +215,9 @@ int iDEC  (sState *sCPU, uchar *cRAM) {
 		case 0x0D:
 			sCPU->C--;
 			if(sCPU->C == 0)
-				iZ = 1;
+				iZ = FLAG_Z;
 			if(sCPU->C == 0x0F)
-				iH = 1;
+				iH = FLAG_H;
 			
 			printf("DEC\tC\t");
 			break;
@@ -235,16 +226,21 @@ int iDEC  (sState *sCPU, uchar *cRAM) {
 		case 0x3D:
 			sCPU->A--;
 			if(sCPU->A == 0)
-				iZ = 1;
+				iZ = FLAG_Z;
 			if(sCPU->A == 0x0F)
-				iH = 1;
+				iH = FLAG_H;
 			
 			printf("DEC\tA\t");
 			break;
 	}
 
 	// Set Flags
-	iFlag(sCPU, iZ, iN, iH, 2);
+	DELFLAG(FLAG_Z | FLAG_N | FLAG_H);
+
+	SETFLAG(iZ);
+	SETFLAG(iN);
+	SETFLAG(iH);
+	
 	return iRet;
 }
 
@@ -271,9 +267,9 @@ int iINC  (sState *sCPU, uchar *cRAM) {
 			sCPU->B++;
 			
 			if(sCPU->B == 0)
-				iZ = 1;
+				iZ = FLAG_Z;
 			if(sCPU->B == 0x10)
-				iH = 1;
+				iH = FLAG_H;
 			iN = 0;
 			
 			printf("INC\tB\t");
@@ -284,9 +280,9 @@ int iINC  (sState *sCPU, uchar *cRAM) {
 			sCPU->C++;
 			
 			if(sCPU->C == 0)
-				iZ = 1;
+				iZ = FLAG_Z;
 			if(sCPU->C == 0x10)
-				iH = 1;
+				iH = FLAG_H;
 			iN = 0;
 			
 			printf("INC\tC\t");
@@ -297,9 +293,9 @@ int iINC  (sState *sCPU, uchar *cRAM) {
 			sCPU->L++;
 			
 			if(sCPU->L == 0)
-				iZ = 1;
+				iZ = FLAG_Z;
 			if(sCPU->L == 0x10)
-				iH = 1;
+				iH = FLAG_H;
 			iN = 0;
 			
 			printf("INC\tL\t");
@@ -307,7 +303,9 @@ int iINC  (sState *sCPU, uchar *cRAM) {
 	}
 	
 	// Set Flags
-	iFlag(sCPU, iZ, iN, iH, 2);
+	DELFLAG(FLAG_Z | FLAG_N | FLAG_H);
+	SETFLAG(iZ | iN | iH);
+	
 	return iRet;
 	
 }
@@ -514,7 +512,6 @@ int iLD   (sState *sCPU, uchar *cRAM) {
 // Bitwise OR operation
 int iOR   (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
-	int iZ=0;
 
 	switch(cRAM[iPC]) {
 		// OR	B
@@ -561,13 +558,14 @@ int iOR   (sState *sCPU, uchar *cRAM) {
 			
 	}
 
+	// Set Flags
+	DELFLAG(FLAG_N | FLAG_H | FLAG_C);
+	
 	// Determine whether the 
 	// Zero-Flag should be set
 	if (sCPU->A == 0)
-		iZ = 1;
+		SETFLAG(FLAG_Z);
 
-	// Set Flags
-	iFlag(sCPU, iZ, 0,0,0);
 	return 1;
 }
 
@@ -609,7 +607,6 @@ int iSUB  (sState *sCPU, uchar *cRAM);
 // Bitwise XOR operation
 int iXOR  (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
-	int iZ=0;
 
 	switch(cRAM[iPC]) {
 		// XOR	B
@@ -658,11 +655,12 @@ int iXOR  (sState *sCPU, uchar *cRAM) {
 
 	// Determine whether the
 	// Zero-Flag should be set
-	if (sCPU->A == 0)
-		iZ = 1;
 
-	// Set Flags
-	iFlag(sCPU, iZ, 0,0,0);
+	// Edit Flags
+	DELFLAG(FLAG_Z | FLAG_N | FLAG_H | FLAG_C);
+	if(sCPU->A == 0)
+		SETFLAG(FLAG_Z);
+
 	return 1;
 }
 
