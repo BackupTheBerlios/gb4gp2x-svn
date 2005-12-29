@@ -178,8 +178,8 @@ int iBoot(char *cRomFilename, char *cRAM, sState *sCPUstate) {
 		printf("ok\n");
 	else {
 		printf(":(\n");
-		fclose(fRomFile);
-		return 0;
+//		fclose(fRomFile);
+//		return 0;
 	}
 	
 	printf("checksum: ");
@@ -194,8 +194,8 @@ int iBoot(char *cRomFilename, char *cRAM, sState *sCPUstate) {
 		printf("ok\n");
 	} else {
 		printf(":(\n");
-		fclose(fRomFile);
-		return 0;
+//		fclose(fRomFile);
+//		return 0;
 	}
 	
 	printf("initializing memory, registers and stack... ");
