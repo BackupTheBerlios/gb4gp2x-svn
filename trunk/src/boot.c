@@ -260,7 +260,8 @@ int main(int argc, char *argv[]) {
 	
 	printf("dumping core... ");
 	iCoreDump(cRAM, "dump.bin");
-	
+
+	free(cRAM);
 	printf("exit.\n");
 	return 0;
 }

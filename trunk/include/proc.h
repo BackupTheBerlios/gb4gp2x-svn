@@ -43,7 +43,6 @@ int iINC  (sState *sCPU, uchar *cRAM);
 int iJP   (sState *sCPU, uchar *cRAM);
 int iJR   (sState *sCPU, uchar *cRAM);
 int iLD   (sState *sCPU, uchar *cRAM);
-int iOR   (sState *sCPU, uchar *cRAM);
 int iRES  (sState *sCPU, uchar *cRAM);
 int iRET  (sState *sCPU, uchar *cRAM);
 int iRETI (sState *sCPU, uchar *cRAM);
@@ -52,7 +51,6 @@ int iSCF  (sState *sCPU, uchar *cRAM);
 int iSET  (sState *sCPU, uchar *cRAM);
 int iSTOP (sState *sCPU, uchar *cRAM);
 int iSUB  (sState *sCPU, uchar *cRAM);
-int iXOR  (sState *sCPU, uchar *cRAM);
 
 int iClock(sState *sCPU, char *cRAM);
 

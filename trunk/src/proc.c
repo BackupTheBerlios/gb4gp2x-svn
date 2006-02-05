@@ -614,66 +614,6 @@ int iLD   (sState *sCPU, uchar *cRAM) {
 	return iRet;
 }
 
-// Bitwise OR operation
-int iOR   (sState *sCPU, uchar *cRAM) {
-	int iPC = sCPU->iPC;
-
-	switch(cRAM[iPC]) {
-		// OR	B
-		case 0xB0:
-			sCPU->A |= sCPU->B;
-			printf("OR\tB\t");
-			break;
-		
-		// OR	C
-		case 0xB1:
-			sCPU->A |= sCPU->C;
-			printf("OR\tC\t");
-			break;
-			
-		// OR	D
-		case 0xB2:
-			sCPU->A |= sCPU->D;
-			printf("OR\tD\t");
-			break;
-			
-		// OR	E
-		case 0xB3:
-			sCPU->A |= sCPU->E;
-			printf("OR\tE\t");
-			break;
-		
-		// OR	H
-		case 0xB4:
-			sCPU->A |= sCPU->H;
-			printf("OR\tH\t");
-			break;
-			
-		// OR	L
-		case 0xB5:
-			sCPU->A |= sCPU->L;
-			printf("OR\tL\t");
-			break;
-			
-		// OR	A
-		case 0xB7:
-			sCPU->A |= sCPU->A;
-			printf("OR\tA\t");
-			break;
-			
-	}
-
-	// Edit Flags
-	DELFLAG(FLAG_Z | FLAG_N | FLAG_H | FLAG_C);
-	
-	// Determine whether the 
-	// Zero-Flag should be set
-	if (sCPU->A == 0)
-		SETFLAG(FLAG_Z);
-
-	return 1;
-}
-
 int iRES  (sState *sCPU, uchar *cRAM);
 
 // Return from subroutine
@@ -708,66 +648,6 @@ int iSCF  (sState *sCPU, uchar *cRAM);
 int iSET  (sState *sCPU, uchar *cRAM);
 int iSTOP (sState *sCPU, uchar *cRAM);
 int iSUB  (sState *sCPU, uchar *cRAM);
-
-// Bitwise XOR operation
-int iXOR  (sState *sCPU, uchar *cRAM) {
-	int iPC = sCPU->iPC;
-
-	switch(cRAM[iPC]) {
-		// XOR	B
-		case 0xA8:
-			sCPU->A ^= sCPU->B;
-			printf("XOR\tB\t");
-			break;
-			
-		// XOR	C
-		case 0xA9:
-			sCPU->A ^= sCPU->C;
-			printf("XOR\tC\t");
-			break;
-		
-		// XOR	D
-		case 0xAA:
-			sCPU->A ^= sCPU->D;
-			printf("XOR\tD\t");
-			break;
-			
-		// XOR	E
-		case 0xAB:
-			sCPU->A ^= sCPU->E;
-			printf("XOR\tE\t");
-			break;
-		
-		// XOR	H
-		case 0xAC:
-			sCPU->A ^= sCPU->H;
-			printf("XOR\tH\t");
-			break;
-		
-		// XOR	L
-		case 0xAD:
-			sCPU->A ^= sCPU->L;
-			printf("XOR\tL\t");
-			break;
-			
-		// XOR	A
-		case 0xAF:
-			sCPU->A ^= sCPU->A;
-			printf("XOR\tA\t");
-			break;
-			
-	}
-
-	// Edit Flags
-	DELFLAG(FLAG_Z | FLAG_N | FLAG_H | FLAG_C);
-	
-	// Determine whether the
-	// Zero-Flag should be set
-	if(sCPU->A == 0)
-		SETFLAG(FLAG_Z);
-
-	return 1;
-}
 
 int iSPEC(sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
@@ -820,16 +700,16 @@ int (*iExec[])(sState *, uchar *) = {
 	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	// 90
 	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	// 98
 	iUNK,	iAND,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	// A0
-	iXOR,	iXOR,	iXOR,	iXOR,	iXOR,	iXOR,	iUNK,	iXOR,	// A8
-	iOR,	iOR,	iOR,	iOR,	iOR,	iOR,	iUNK,	iOR,	// B0
+	iXOR,	iXOR,	iXOR,	iXOR,	iXOR,	iXOR,	iXOR,	iXOR,	// A8
+	iOR,	iOR,	iOR,	iOR,	iOR,	iOR,	iOR,	iOR,	// B0
 	iCP,	iCP,	iCP,	iCP,	iCP,	iCP,	iUNK,	iCP,	// B8
 	iUNK,	iPOP,	iUNK,	iJP,	iUNK,	iPUSH,	iUNK,	iRST,	// C0
 	iRET,	iRET,	iUNK,	iUNK,	iUNK,	iCALL,	iUNK,	iRST,	// C8
 	iUNK,	iPOP,	iUNK,	iUNK,	iUNK,	iPUSH,	iUNK,	iRST,	// D0
 	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iRST,	// D8
 	iLD,	iPOP,	iLD,	iUNK,	iUNK,	iPUSH,	iAND,	iRST,	// E0
-	iUNK,	iJP,	iLD,	iUNK,	iUNK,	iUNK,	iUNK,	iRST,	// E8
-	iLD,	iPOP,	iUNK,	iDI,	iUNK,	iPUSH,	iUNK,	iRST,	// F0
+	iUNK,	iJP,	iLD,	iUNK,	iUNK,	iUNK,	iXOR,	iRST,	// E8
+	iLD,	iPOP,	iUNK,	iDI,	iUNK,	iPUSH,	iOR,	iRST,	// F0
 	iUNK,	iUNK,	iUNK,	iEI,	iUNK,	iUNK,	iCP,	iRST,	// F8
 };
 

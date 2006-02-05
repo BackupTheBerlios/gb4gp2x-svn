@@ -48,7 +48,7 @@ int iEI   (sState *sCPU, uchar *cRAM);
 int iLDD  (sState *sCPU, uchar *cRAM);
 int iLDI  (sState *sCPU, uchar *cRAM);
 int iNOP  (sState *sCPU, uchar *cRAM);
-//int iOR   (sState *sCPU, uchar *cRAM);
+int iOR   (sState *sCPU, uchar *cRAM);
 int iPOP  (sState *sCPU, uchar *cRAM);
 int iPUSH (sState *sCPU, uchar *cRAM); 
 //int iRES  (sState *sCPU, uchar *cRAM);
@@ -60,7 +60,7 @@ int iRST  (sState *sCPU, uchar *cRAM);
 //int iSET  (sState *sCPU, uchar *cRAM);
 //int iSTOP (sState *sCPU, uchar *cRAM);
 //int iSUB  (sState *sCPU, uchar *cRAM);
-//int iXOR  (sState *sCPU, uchar *cRAM);
+int iXOR  (sState *sCPU, uchar *cRAM);
 
 #endif
 

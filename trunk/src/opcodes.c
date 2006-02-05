@@ -105,6 +105,80 @@ int iNOP  (sState *sCPU, uchar *cRAM) {
 	return 1;
 }
 
+// Bitwise OR operation
+int iOR   (sState *sCPU, uchar *cRAM) {
+    int iPC = sCPU->iPC; 
+    int iHL, iRet = 1;
+    
+    switch(cRAM[iPC]) {
+        // OR   B
+        case 0xB0:
+            sCPU->A |= sCPU->B;
+            printf("OR\tB\t");
+            break;
+
+        // OR   C
+        case 0xB1:
+            sCPU->A |= sCPU->C;
+            printf("OR\tC\t");
+            break;
+
+        // OR   D
+        case 0xB2:
+            sCPU->A |= sCPU->D;
+            printf("OR\tD\t");
+            break;
+
+        // OR   E
+        case 0xB3:
+            sCPU->A |= sCPU->E;
+            printf("OR\tE\t");
+            break;
+
+        // OR   H
+        case 0xB4:
+            sCPU->A |= sCPU->H;
+            printf("OR\tH\t");
+            break;
+
+        // OR   L
+        case 0xB5:
+            sCPU->A |= sCPU->L;
+            printf("OR\tL\t");
+            break;
+
+        // OR   (HL)
+        case 0xB6:
+            iHL = (sCPU->H << 8) ^ sCPU->L;
+            sCPU->A |= cRAM[iHL];
+            printf("OR\t(HL)\t");
+            break;
+
+        // OR   A
+        case 0xB7:
+            sCPU->A |= sCPU->A;
+            printf("OR\tA\t");
+            break;
+
+        // OR   nn
+        case 0xF6:
+            sCPU->A |= cRAM[iPC+1];
+            printf("OR\t%02x\t", cRAM[iPC+1]);
+			iRet = 2;
+            break;
+    }
+
+    // Edit Flags
+    DELFLAG(FLAG_Z | FLAG_N | FLAG_H | FLAG_C);
+
+    // Determine whether the 
+    // Zero-Flag should be set
+    if (sCPU->A == 0)
+        SETFLAG(FLAG_Z);
+
+    return iRet;
+}
+
 // Pop a value from the stack
 int iPOP  (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
@@ -262,6 +336,81 @@ int iRST  (sState *sCPU, uchar *cRAM) {
 	sCPU->iSP-=2;
 	
 	return 0;
+}
+
+// Bitwise XOR operation
+int iXOR  (sState *sCPU, uchar *cRAM) {
+    int iPC = sCPU->iPC;
+    int iHL, iRet = 1;
+        
+    switch(cRAM[iPC]) {
+        // XOR  B
+        case 0xA8:
+            sCPU->A ^= sCPU->B;
+            printf("XOR\tB\t");
+            break;
+            
+        // XOR  C
+        case 0xA9:
+            sCPU->A ^= sCPU->C;
+            printf("XOR\tC\t");
+            break;
+
+        // XOR  D
+        case 0xAA:
+            sCPU->A ^= sCPU->D;
+            printf("XOR\tD\t");
+            break;
+
+        // XOR  E
+        case 0xAB:
+            sCPU->A ^= sCPU->E;
+            printf("XOR\tE\t");
+            break;
+
+        // XOR  H
+        case 0xAC:
+            sCPU->A ^= sCPU->H;
+            printf("XOR\tH\t");
+            break;
+
+        // XOR  L
+        case 0xAD:
+            sCPU->A ^= sCPU->L;
+            printf("XOR\tL\t");
+            break;
+
+        // XOR  (HL)
+        case 0xAE:
+            iHL = (sCPU->H << 8) ^ sCPU->L;
+            sCPU->A ^= cRAM[iHL];
+            printf("XOR\t(HL)\t");
+            break;
+
+        // XOR  A
+        case 0xAF:
+            sCPU->A ^= sCPU->A;
+            printf("XOR\tA\t");
+            break;
+
+        // XOR  nn
+        case 0xEE:
+            sCPU->A ^= cRAM[iPC+1];
+            printf("XOR\t%02x\t", cRAM[iPC+1]);
+			iRet = 2;
+            break;
+
+    }
+
+    // Edit Flags
+    DELFLAG(FLAG_Z | FLAG_N | FLAG_H | FLAG_C);
+
+    // Determine whether the
+    // Zero-Flag should be set
+    if(sCPU->A == 0)
+        SETFLAG(FLAG_Z);
+
+    return iRet;
 }
 
 /*)\
