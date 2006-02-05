@@ -798,7 +798,6 @@ int iUNK(sState *sCPU, uchar *cRAM) {
 	return 0;
 }
 
-int (*iTest[])(const char*, ...) = { printf, scanf };
 int (*iExec[])(sState *, uchar *) = {
 	iNOP,	iLD,	iLD,	iINC,	iINC,	iDEC,	iLD,	iUNK,	// 00
 	iUNK,	iUNK,	iUNK,	iDEC,	iINC,	iDEC,	iLD,	iUNK,	// 08
