@@ -29,11 +29,8 @@ You can contact the author via electronic mail by the address
 #include <stdlib.h>
 #include <string.h>
 
-#include <SDL.h>
-
 #include "gb.h"
 #include "proc.h"
-#include "video.h"
 
 char cNintendoLogo[48] = {
 	0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B,
@@ -264,8 +261,6 @@ int main(int argc, char *argv[]) {
 	printf("dumping core... ");
 	iCoreDump(cRAM, "dump.bin");
 	
-	// close our window
-	iVidStop();
 	printf("exit.\n");
 	return 0;
 }
