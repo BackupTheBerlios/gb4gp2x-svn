@@ -243,7 +243,7 @@ int iDAA  (sState *sCPU, uchar *cRAM);
 int iDEC  (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
 	int iRet = 1;
-	int iZ=0, iN =FLAG_N, iH=0;
+	int iZ=0, iN = FLAG_N, iH=0;
 
 	switch(cRAM[iPC]) {
 		// DEC	B
@@ -251,7 +251,7 @@ int iDEC  (sState *sCPU, uchar *cRAM) {
 			sCPU->B--;
 			if(sCPU->B == 0)
 				iZ = FLAG_Z;
-			if(sCPU->B == 0x0F)
+			if((sCPU->B & 0xF ) == 0xF)
 				iH = FLAG_H;
 			
 			printf("DEC\tB\t");
@@ -273,7 +273,7 @@ int iDEC  (sState *sCPU, uchar *cRAM) {
 			sCPU->C--;
 			if(sCPU->C == 0)
 				iZ = FLAG_Z;
-			if(sCPU->C == 0x0F)
+			if((sCPU->C & 0xF) == 0xF)
 				iH = FLAG_H;
 			
 			printf("DEC\tC\t");
@@ -284,7 +284,7 @@ int iDEC  (sState *sCPU, uchar *cRAM) {
 			sCPU->A--;
 			if(sCPU->A == 0)
 				iZ = FLAG_Z;
-			if(sCPU->A == 0x0F)
+			if((sCPU->A & 0xF) == 0xF)
 				iH = FLAG_H;
 			
 			printf("DEC\tA\t");
@@ -792,8 +792,50 @@ int iSPEC(sState *sCPU, uchar *cRAM) {
 	return 2;
 }
 
-// Dump the values of the registers
-// onto the screen
+int iUNK(sState *sCPU, uchar *cRAM) {
+	int iPC = sCPU->iPC;
+	printf("\t[%02x]\t", cRAM[iPC]);
+	return 0;
+}
+
+int (*iTest[])(const char*, ...) = { printf, scanf };
+int (*iExec[])(sState *, uchar *) = {
+	iNOP,	iLD,	iLD,	iINC,	iINC,	iDEC,	iLD,	iUNK,	// 00
+	iUNK,	iUNK,	iUNK,	iDEC,	iINC,	iDEC,	iLD,	iUNK,	// 08
+	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iLD,	iUNK,	// 10
+	iJR,	iADD,	iUNK,	iUNK,	iUNK,	iUNK,	iLD,	iUNK,	// 18
+	iJR,	iLD,	iLDI,	iINC,	iUNK,	iUNK,	iLD,	iUNK,	// 20
+	iUNK,	iUNK,	iLDI,	iINC,	iUNK,	iUNK,	iLD,	iCPL,	// 28
+	iUNK,	iLD,	iLDD,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	// 30
+	iUNK,	iUNK,	iLDD,	iUNK,	iUNK,	iDEC,	iLD,	iUNK,	// 38
+	iLD,	iLD,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iLD,	// 40
+	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iLD,	// 48
+	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iLD,	iUNK,	// 50
+	iUNK,	iUNK,	iUNK,	iLD,	iUNK,	iUNK,	iLD,	iLD,	// 58
+	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	// 60
+	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	// 68
+	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	// 70
+	iLD,	iLD,	iUNK,	iUNK,	iUNK,	iUNK,	iLD,	iUNK,	// 78
+	iUNK,	iADD,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iADD,	// 80
+	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	// 88
+	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	// 90
+	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	// 98
+	iUNK,	iAND,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	// A0
+	iXOR,	iXOR,	iXOR,	iXOR,	iXOR,	iXOR,	iUNK,	iXOR,	// A8
+	iOR,	iOR,	iOR,	iOR,	iOR,	iOR,	iUNK,	iOR,	// B0
+	iCP,	iCP,	iCP,	iCP,	iCP,	iCP,	iUNK,	iCP,	// B8
+	iUNK,	iPOP,	iUNK,	iJP,	iUNK,	iPUSH,	iUNK,	iRST,	// C0
+	iRET,	iRET,	iUNK,	iUNK,	iUNK,	iCALL,	iUNK,	iRST,	// C8
+	iUNK,	iPOP,	iUNK,	iUNK,	iUNK,	iPUSH,	iUNK,	iRST,	// D0
+	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iRST,	// D8
+	iLD,	iPOP,	iLD,	iUNK,	iUNK,	iPUSH,	iAND,	iRST,	// E0
+	iUNK,	iJP,	iLD,	iUNK,	iUNK,	iUNK,	iUNK,	iRST,	// E8
+	iLD,	iPOP,	iUNK,	iDI,	iUNK,	iPUSH,	iUNK,	iRST,	// F0
+	iUNK,	iUNK,	iUNK,	iEI,	iUNK,	iUNK,	iCP,	iRST,	// F8
+};
+
+// Display the values of the
+// registers on the screen
 int iDebugMsg(sState *sCPU, uchar *cRAM) {
 	printf(" | R: %02x%02x %02x%02x %02x%02x %02x%02x PC: %04x SP: %02x%02x %01x\n",
 			sCPU->A, sCPU->F, sCPU->B, sCPU->C, sCPU->D, sCPU->E, sCPU->H, sCPU->L,
@@ -807,111 +849,13 @@ int iClock(sState *sCPU, uchar *cRAM) {
 	int iAdd=1, iPC=sCPU->iPC;
 	
 	printf("%04x\t%02x%02x%02x\t",iPC, cRAM[iPC], cRAM[iPC+1], cRAM[iPC+2]);
-
-	switch(cRAM[iPC]) {
-		case 0x19:
-		case 0x81:
-		case 0x87: iAdd = iADD (sCPU, cRAM); break;
-		case 0xA1:
-		case 0xE6: iAdd = iAND (sCPU, cRAM); break;
-		case 0xCD: iAdd = iCALL(sCPU, cRAM); break;
-		case 0xB8:
-		case 0xB9:
-		case 0xBA:
-		case 0xBB:
-		case 0xBC:
-		case 0xBD:
-		case 0xBF:
-		case 0xFE: iAdd = iCP  (sCPU, cRAM); break;
-		case 0x2F: iAdd = iCPL (sCPU, cRAM); break;
-		case 0x05: 
-		case 0x0B:
-		case 0x0D:
-		case 0x3D: iAdd = iDEC (sCPU, cRAM); break;
-		case 0xF3: iAdd = iDI  (sCPU, cRAM); break;
-		case 0xFB: iAdd = iEI  (sCPU, cRAM); break;
-		case 0x03:
-		case 0x04: 
-		case 0x0C: 
-		case 0x23: 
-		case 0x2C: iAdd = iINC (sCPU, cRAM); break;
-		case 0xC3: 
-		case 0xE9: iAdd = iJP  (sCPU, cRAM); break;
-		case 0x18: 
-		case 0x20: iAdd = iJR  (sCPU, cRAM); break;
-		case 0x01:
-		case 0x02:
-		case 0x06:
-		case 0x0E:
-		case 0x16:
-		case 0x1E:
-		case 0x21:
-		case 0x26:
-		case 0x2E:
-		case 0x31:
-		case 0x3E:
-		case 0x40:
-		case 0x47:
-		case 0x4F:
-		case 0x56:
-		case 0x5B:
-		case 0x5E:
-		case 0x5F:
-		case 0x78:
-		case 0x79:
-		case 0x7E:
-		case 0xE0:
-		case 0xE2:
-		case 0xEA:
-		case 0xF0: iAdd = iLD  (sCPU, cRAM); break;
-		case 0x32:
-		case 0x3A: iAdd = iLDD (sCPU, cRAM); break;
-		case 0x22:
-		case 0x2A: iAdd = iLDI (sCPU, cRAM); break;
-		case 0x00: iAdd = iNOP (sCPU, cRAM); break;
-		case 0xB0:
-		case 0xB1:
-		case 0xB2:
-		case 0xB3:
-		case 0xB4:
-		case 0xB5:
-		case 0xB7: iAdd = iOR  (sCPU, cRAM); break;
-		case 0xC1:
-		case 0xD1:
-		case 0xE1:
-		case 0xF1: iAdd = iPOP (sCPU, cRAM); break;
-		case 0xC5:
-		case 0xD5:
-		case 0xE5:
-		case 0xF5: iAdd = iPUSH(sCPU, cRAM); break;
-		case 0xC8:
-		case 0xC9: iAdd = iRET (sCPU, cRAM); break;
-		case 0xC7:
-		case 0xCF:
-		case 0xD7:
-		case 0xDF:
-		case 0xE7:
-		case 0xEF:
-		case 0xF7:		
-		case 0xFF: iAdd = iRST (sCPU, cRAM); break;
-		case 0xA8:
-		case 0xA9:
-		case 0xAA:
-		case 0xAB:
-		case 0xAC:
-		case 0xAD:
-		case 0xAF: iAdd = iXOR (sCPU, cRAM); break;
-
-		case 0xCB: iAdd = iSPEC(sCPU, cRAM); break;
-		default: printf("\t[%02x]\t", cRAM[iPC]);
-			break;
-	}
-
+	
+	iAdd = (*iExec[cRAM[iPC]])(sCPU, cRAM);
 	// Only the 4 most significant
 	// bits of F should hold information
 	sCPU->F &= 0xF0;
 
-	// Dump registers
+	// Display registers
 	iDebugMsg(sCPU, cRAM);
 
 	// Increase Program Counter

@@ -28,31 +28,31 @@ You can contact the author via electronic mail by the address
 #define _PROC_H_
 
 // These will be moved to opcodes.h "when it's done"
-int iADC  (sState *sCPU, char *cRAM);
-int iADD  (sState *sCPU, char *cRAM);
-int iAND  (sState *sCPU, char *cRAM);
-int iBIT  (sState *sCPU, char *cRAM);
-int iCALL (sState *sCPU, char *cRAM);
-int iCCF  (sState *sCPU, char *cRAM);
-int iCP   (sState *sCPU, char *cRAM);
-int iCPL  (sState *sCPU, char *cRAM);
-int iDAA  (sState *sCPU, char *cRAM);
-int iDEC  (sState *sCPU, char *cRAM);
-int iHALT (sState *sCPU, char *cRAM);
-int iINC  (sState *sCPU, char *cRAM);
-int iJP   (sState *sCPU, char *cRAM);
-int iJR   (sState *sCPU, char *cRAM);
-int iLD   (sState *sCPU, char *cRAM);
-int iOR   (sState *sCPU, char *cRAM);
-int iRES  (sState *sCPU, char *cRAM);
-int iRET  (sState *sCPU, char *cRAM);
-int iRETI (sState *sCPU, char *cRAM);
-int iSBC  (sState *sCPU, char *cRAM);
-int iSCF  (sState *sCPU, char *cRAM);
-int iSET  (sState *sCPU, char *cRAM);
-int iSTOP (sState *sCPU, char *cRAM);
-int iSUB  (sState *sCPU, char *cRAM);
-int iXOR  (sState *sCPU, char *cRAM);
+int iADC  (sState *sCPU, uchar *cRAM);
+int iADD  (sState *sCPU, uchar *cRAM);
+int iAND  (sState *sCPU, uchar *cRAM);
+int iBIT  (sState *sCPU, uchar *cRAM);
+int iCALL (sState *sCPU, uchar *cRAM);
+int iCCF  (sState *sCPU, uchar *cRAM);
+int iCP   (sState *sCPU, uchar *cRAM);
+int iCPL  (sState *sCPU, uchar *cRAM);
+int iDAA  (sState *sCPU, uchar *cRAM);
+int iDEC  (sState *sCPU, uchar *cRAM);
+int iHALT (sState *sCPU, uchar *cRAM);
+int iINC  (sState *sCPU, uchar *cRAM);
+int iJP   (sState *sCPU, uchar *cRAM);
+int iJR   (sState *sCPU, uchar *cRAM);
+int iLD   (sState *sCPU, uchar *cRAM);
+int iOR   (sState *sCPU, uchar *cRAM);
+int iRES  (sState *sCPU, uchar *cRAM);
+int iRET  (sState *sCPU, uchar *cRAM);
+int iRETI (sState *sCPU, uchar *cRAM);
+int iSBC  (sState *sCPU, uchar *cRAM);
+int iSCF  (sState *sCPU, uchar *cRAM);
+int iSET  (sState *sCPU, uchar *cRAM);
+int iSTOP (sState *sCPU, uchar *cRAM);
+int iSUB  (sState *sCPU, uchar *cRAM);
+int iXOR  (sState *sCPU, uchar *cRAM);
 
 int iClock(sState *sCPU, char *cRAM);
 
