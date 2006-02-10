@@ -252,7 +252,7 @@ int main(int argc, char *argv[]) {
 	printf("stack pointer:   %04x\n", sCPUstate.iSP & 65535);
 	printf("program counter: %04x\n\n", sCPUstate.iPC & 65535);
 	
-	printf("done.\t\t |     AF   BC   DE   HL\n");
+	printf("done.\n");
 
 	// execute the beginning of the ROM
 	for(i=0;i<iNumOpcodes;i++)

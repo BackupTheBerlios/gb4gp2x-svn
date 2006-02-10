@@ -716,9 +716,12 @@ int (*iExec[])(sState *, uchar *) = {
 // Display the values of the
 // registers on the screen
 int iDebugMsg(sState *sCPU, uchar *cRAM) {
-	printf(" | R: %02x%02x %02x%02x %02x%02x %02x%02x PC: %04x SP: %02x%02x %01x\n",
-			sCPU->A, sCPU->F, sCPU->B, sCPU->C, sCPU->D, sCPU->E, sCPU->H, sCPU->L,
-			sCPU->iPC, cRAM[sCPU->iSP+1], cRAM[sCPU->iSP], sCPU->iEI);
+	printf(" | AF%02x%02x BC%02x%02x DE%02x%02x ",
+		sCPU->A, sCPU->F, sCPU->B, sCPU->C, sCPU->D, sCPU->E);
+
+	printf("HL%02x%02x PC%04x SP%02x%02x I%01x\n",
+		sCPU->H, sCPU->L, sCPU->iPC, cRAM[sCPU->iSP+1],
+		cRAM[sCPU->iSP], sCPU->iEI);
 					
 	return 0;
 }
