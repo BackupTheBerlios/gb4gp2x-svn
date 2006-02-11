@@ -127,35 +127,84 @@ int iAND  (sState *sCPU, uchar *cRAM) {
 	return 2;
 }
 int iBIT  (sState *sCPU, uchar *cRAM);
-
+/*
 // Call a subroutine
 int iCALL (sState *sCPU, uchar *cRAM){
 	int iPC = sCPU->iPC;
 	int iSP = sCPU->iSP;
+	int iOK = 0; // if we do call, set to 1
 
 	uchar cHB=0, cLB=0;
 
 	switch(cRAM[iPC]) {
+		// CALL	NZ, nnnn
+		case 0xC4:
+			if(!(sCPU->A & FLAG_Z))
+				iOK = 1;
+			
+			cHB = cRAM[iPC+2];
+			cLB = cRAM[iPC+1];
+			
+			printf("CALL\tNZ,\t%02x%02x", cRAM[iPC+2], cRAM[iPC+1]);
+			break;
+		
+		// CALL	Z, nnnn
+		case 0xCC:
+			if(sCPU->F & FLAG_Z)
+				iOK = 1;
+			
+			cHB = cRAM[iPC+2];
+			cLB = cRAM[iPC+1];
+			
+			printf("CALL\tZ,\t%02x%02x", cRAM[iPC+2], cRAM[iPC+1]);
+			break;
+		
 		// CALL	nnnn
-		case 0xCD: 
+		case 0xCD:
+			iOK = 1;
 			cHB = cRAM[iPC+2];
 			cLB = cRAM[iPC+1];
 			
 			printf("CALL\t%02x%02x\t", cRAM[iPC+2], cRAM[iPC+1]);
 			break;
+		
+		// CALL	NC, nnnn
+		case 0xD4:
+			if(!(sCPU->F & FLAG_C))
+				iOK = 1;
+			
+			cHB = cRAM[iPC+2];
+			cLB = cRAM[iPC+1];
+			
+			printf("CALL\tNC,\t%02x%02x", cRAM[iPC+2], cRAM[iPC+1]);
+			break;
+		
+		// CALL	C, nnnn
+		case 0xDC:
+			if(sCPU->F & FLAG_C)
+				iOK = 1;
+			
+			cHB = cRAM[iPC+2];
+			cLB = cRAM[iPC+1];
+			
+			printf("CALL\tC,\t%02x%02x", cRAM[iPC+2], cRAM[iPC+1]);
+			break;
+		
 	}
 
-	sCPU->iPC=(cHB<<8)^cLB;
-	iPC+=3;
+	if(iOK) {
+		sCPU->iPC=(cHB<<8)^cLB;
+		iPC+=3;
 
-	// Push the calling address onto the stack
-	cRAM[iSP-1] = (iPC>>8) & 255;
-	cRAM[iSP-2] = iPC & 255;
-	sCPU->iSP-=2;
+		// Push the calling address onto the stack
+		cRAM[iSP-1] = (iPC>>8) & 255;
+		cRAM[iSP-2] = iPC & 255;
+		sCPU->iSP-=2;
+	}
 
 	return 0;
 }
-
+*/
 int iCCF  (sState *sCPU, uchar *cRAM);
 
 // compare value with register A
@@ -679,7 +728,7 @@ int iUNK(sState *sCPU, uchar *cRAM) {
 }
 
 int (*iExec[])(sState *, uchar *) = {
-	iNOP,	iLD,	iLD,	iINC,	iINC,	iDEC,	iLD,	iUNK,	// 00
+	iNOP,	iLD,	iLD,	iUNK,	iINC,	iDEC,	iLD,	iUNK,	// 00
 	iUNK,	iUNK,	iUNK,	iDEC,	iINC,	iDEC,	iLD,	iUNK,	// 08
 	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iLD,	iUNK,	// 10
 	iJR,	iADD,	iUNK,	iUNK,	iUNK,	iUNK,	iLD,	iUNK,	// 18
@@ -703,10 +752,10 @@ int (*iExec[])(sState *, uchar *) = {
 	iXOR,	iXOR,	iXOR,	iXOR,	iXOR,	iXOR,	iXOR,	iXOR,	// A8
 	iOR,	iOR,	iOR,	iOR,	iOR,	iOR,	iOR,	iOR,	// B0
 	iCP,	iCP,	iCP,	iCP,	iCP,	iCP,	iUNK,	iCP,	// B8
-	iUNK,	iPOP,	iUNK,	iJP,	iUNK,	iPUSH,	iUNK,	iRST,	// C0
-	iRET,	iRET,	iUNK,	iUNK,	iUNK,	iCALL,	iUNK,	iRST,	// C8
-	iUNK,	iPOP,	iUNK,	iUNK,	iUNK,	iPUSH,	iUNK,	iRST,	// D0
-	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iUNK,	iRST,	// D8
+	iUNK,	iPOP,	iUNK,	iJP,	iCALL,	iPUSH,	iUNK,	iRST,	// C0
+	iRET,	iRET,	iUNK,	iUNK,	iCALL,	iCALL,	iUNK,	iRST,	// C8
+	iUNK,	iPOP,	iUNK,	iUNK,	iCALL,	iPUSH,	iUNK,	iRST,	// D0
+	iUNK,	iUNK,	iUNK,	iUNK,	iCALL,	iUNK,	iUNK,	iRST,	// D8
 	iLD,	iPOP,	iLD,	iUNK,	iUNK,	iPUSH,	iAND,	iRST,	// E0
 	iUNK,	iJP,	iLD,	iUNK,	iUNK,	iUNK,	iXOR,	iRST,	// E8
 	iLD,	iPOP,	iUNK,	iDI,	iUNK,	iPUSH,	iOR,	iRST,	// F0

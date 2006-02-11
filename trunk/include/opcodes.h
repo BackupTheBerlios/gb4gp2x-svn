@@ -32,7 +32,7 @@ You can contact the author via electronic mail by the address
 //int iADD  (sState *sCPU, uchar *cRAM);
 //int iAND  (sState *sCPU, uchar *cRAM);
 //int iBIT  (sState *sCPU, uchar *cRAM);
-//int iCALL (sState *sCPU, uchar *cRAM);
+int iCALL (sState *sCPU, uchar *cRAM);
 //int iCCF  (sState *sCPU, uchar *cRAM);
 //int iCP   (sState *sCPU, uchar *cRAM);
 //int iCPL  (sState *sCPU, uchar *cRAM);
