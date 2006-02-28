@@ -1,0 +1,25 @@
+OBJ=		objects
+SRC=		src
+BIN=		bin
+HEADER=		include
+CCFLAGS=	-Wall -O2 -g -static -fno-strict-aliasing -I $(HEADER)
+CC=		i386-mingw32msvc-gcc
+
+default:
+	make $(BIN)/gb4gp2x.exe
+	
+$(BIN)/gb4gp2x.exe: $(OBJ)/opcodes.obj $(OBJ)/proc.obj $(SRC)/boot.c
+	$(CC) $(CCFLAGS) -o $@ $^
+	
+$(OBJ)/proc.obj: $(SRC)/proc.c
+	$(CC) $(CCFLAGS) -c -o $@ $^
+
+$(OBJ)/opcodes.obj: $(SRC)/opcodes.c
+	$(CC) $(CCFLAGS) -c -o $@ $^
+
+install: $(BIN)/gb4gp2x.exe
+	ln -sf ./$(BIN)/gb4gp2x.exe ./gb.exe
+
+clean:
+	rm -f $(OBJ)/*obj
+	rm -f $(BIN)/*
