@@ -223,7 +223,7 @@ int iCoreDump(char *cRAM, char *cDumpFilename) {
 }
 
 int main(int argc, char *argv[]) {
-	char *cRAM=(char*)malloc(65536);
+	char *cRAM;
 	sState sCPUstate;
 	int i, iNumOpcodes;
 
@@ -236,11 +236,17 @@ int main(int argc, char *argv[]) {
 		iNumOpcodes = atoi(argv[2]);
 	else
 		iNumOpcodes = 10;
+
+	cRAM=(char*)malloc(65536);
+	if(cRAM == NULL) {
+		printf("ERROR: Could not allocate 65536 bytes of memory.\n");
+		return -1;
+	}
 	
 	// boot the ROM
 	if(iBoot(argv[1],cRAM, &sCPUstate) == 0) {
 		printf("ERROR: Could not open '%s'.\n", argv[1]);
-		return 0;
+		return -1;
 	}
 	
 	// statistics
