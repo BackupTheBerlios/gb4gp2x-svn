@@ -27,16 +27,16 @@ You can contact the author via electronic mail by the address
 #include <stdio.h>
 #include "gb.h"
 
-// Call a subroutine
+/*/ Call a subroutine */
 int iCALL (sState *sCPU, uchar *cRAM){
     int iPC = sCPU->iPC; 
     int iSP = sCPU->iSP;
-    int iOK = 0; // if we do call, set to 1
+    int iOK = 0; /* if we do call, set to 1 */
 
     uchar cHB=0, cLB=0;
 
     switch(cRAM[iPC]) {
-        // CALL NZ, nnnn
+        /* CALL NZ, nnnn */
         case 0xC4:
             if(!(sCPU->A & FLAG_Z))
                 iOK = 1;
@@ -47,7 +47,7 @@ int iCALL (sState *sCPU, uchar *cRAM){
             printf("CALL\tNZ,\t%02x%02x", cRAM[iPC+2], cRAM[iPC+1]);
             break;
 
-        // CALL Z, nnnn
+        /* CALL Z, nnnn */
         case 0xCC:
             if(sCPU->F & FLAG_Z)
                 iOK = 1;
@@ -58,7 +58,7 @@ int iCALL (sState *sCPU, uchar *cRAM){
             printf("CALL\tZ,\t%02x%02x", cRAM[iPC+2], cRAM[iPC+1]);
             break;
 
-        // CALL nnnn
+        /* CALL nnnn */
         case 0xCD:
             iOK = 1;
             cHB = cRAM[iPC+2];
@@ -67,7 +67,7 @@ int iCALL (sState *sCPU, uchar *cRAM){
             printf("CALL\t%02x%02x\t", cRAM[iPC+2], cRAM[iPC+1]);
             break;
 
-        // CALL NC, nnnn
+        /* CALL NC, nnnn */
         case 0xD4:
             if(!(sCPU->F & FLAG_C))
                 iOK = 1;
@@ -78,7 +78,7 @@ int iCALL (sState *sCPU, uchar *cRAM){
             printf("CALL\tNC,\t%02x%02x", cRAM[iPC+2], cRAM[iPC+1]);
             break;
 
-        // CALL C, nnnn
+        /* CALL C, nnnn */
         case 0xDC:
             if(sCPU->F & FLAG_C)
                 iOK = 1;
@@ -95,7 +95,10 @@ int iCALL (sState *sCPU, uchar *cRAM){
         sCPU->iPC=(cHB<<8)^cLB;
         iPC+=3;
 
-        // Push the calling address onto the stack
+        /* 
+	 * Push the calling address 
+	 * onto the stack 
+	 */
         cRAM[iSP-1] = (iPC>>8) & 255;
         cRAM[iSP-2] = iPC & 255;
         sCPU->iSP-=2;
@@ -104,7 +107,9 @@ int iCALL (sState *sCPU, uchar *cRAM){
     return 0;
 }
 
-// Disable interrupts
+/* 
+ * Disable interrupts
+ */
 int iDI   (sState *sCPU, uchar *cRAM) {
 	sCPU->iEI = 0;
 	printf("DI\t\t");
@@ -112,7 +117,9 @@ int iDI   (sState *sCPU, uchar *cRAM) {
 	return 1;
 }
 
-// Enable interrupts
+/*
+ * Enable interrupts
+ */
 int iEI   (sState *sCPU, uchar *cRAM) {
 	sCPU->iEI = 1;
 	printf("EI\t\t");
@@ -120,19 +127,21 @@ int iEI   (sState *sCPU, uchar *cRAM) {
 	return 1;
 }
 
-// Load and decrease
+/* 
+ * Load and decrease
+ */
 int iLDD  (sState *sCPU, uchar *cRAM){
 	int iPC = sCPU->iPC;
 	int iRet = 1;
 	
 	switch(cRAM[iPC]) {
-		// LDD	(HL), A
+		/* LDD	(HL), A */
 		case 0x32:
 			cRAM[(sCPU->H << 8) ^ sCPU->L] = sCPU->A;
 			printf("LDD\t$HL, A\t");
 			break;
 		
-		// LDD	A, (HL)
+		/* LDD	A, (HL) */
 		case 0x3A:
 			sCPU->A = cRAM[(sCPU->H << 8) ^ sCPU->L];
 			printf("LDD\tA, $HL\t");
@@ -140,7 +149,7 @@ int iLDD  (sState *sCPU, uchar *cRAM){
 			
 	}
 
-	// Decrease HL
+	/* Decrease HL */
 	sCPU->L--;
 	if(sCPU->L == 0xFF)
 		sCPU->H--;
@@ -148,19 +157,21 @@ int iLDD  (sState *sCPU, uchar *cRAM){
 	return iRet;
 }
 
-// Load and increase
+/* 
+ * Load and increase 
+ */
 int iLDI  (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
 	int iRet = 1;
 	
 	switch(cRAM[iPC]) {
-		// LDI	(HL), A
+		/* LDI	(HL), A */
 		case 0x22: 
 			cRAM[(sCPU->H << 8) ^ sCPU->L] = sCPU->A;
 			printf("LDI\t$HL, A\t");
 			break;
 		
-		// LDI	A, (HL)
+		/* LDI	A, (HL) */
 		case 0x2A: 
 			sCPU->A = cRAM[(sCPU->H << 8) ^ sCPU->L];
 			printf("LDI\tA, $HL\t");
@@ -168,7 +179,7 @@ int iLDI  (sState *sCPU, uchar *cRAM) {
 			
 	}
 
-	// Increase HL
+	/* Increase HL */
 	sCPU->L++;
 	if(sCPU->L == 0)
 		sCPU->H++;
@@ -176,68 +187,72 @@ int iLDI  (sState *sCPU, uchar *cRAM) {
 	return iRet;
 };
 
-// The most important opcode
+/* 
+ * The most important opcode
+ */
 int iNOP  (sState *sCPU, uchar *cRAM) {
 	printf("NOP\t\t");
 	return 1;
 }
 
-// Bitwise OR operation
+/* 
+ * Bitwise OR operation
+ */
 int iOR   (sState *sCPU, uchar *cRAM) {
     int iPC = sCPU->iPC; 
     int iHL, iRet = 1;
     
     switch(cRAM[iPC]) {
-        // OR   B
+        /* OR   B */
         case 0xB0:
             sCPU->A |= sCPU->B;
             printf("OR\tB\t");
             break;
 
-        // OR   C
+        /* OR   C */
         case 0xB1:
             sCPU->A |= sCPU->C;
             printf("OR\tC\t");
             break;
 
-        // OR   D
+        /* OR   D */
         case 0xB2:
             sCPU->A |= sCPU->D;
             printf("OR\tD\t");
             break;
 
-        // OR   E
+        /* OR   E */
         case 0xB3:
             sCPU->A |= sCPU->E;
             printf("OR\tE\t");
             break;
 
-        // OR   H
+        /* OR   H */
         case 0xB4:
             sCPU->A |= sCPU->H;
             printf("OR\tH\t");
             break;
 
-        // OR   L
+        /* OR   L */
         case 0xB5:
             sCPU->A |= sCPU->L;
             printf("OR\tL\t");
             break;
 
-        // OR   (HL)
+        /* OR   (HL) */
         case 0xB6:
             iHL = (sCPU->H << 8) ^ sCPU->L;
             sCPU->A |= cRAM[iHL];
             printf("OR\t(HL)\t");
             break;
 
-        // OR   A
+        /* OR   A */
         case 0xB7:
             sCPU->A |= sCPU->A;
             printf("OR\tA\t");
             break;
 
-        // OR   nn
+        /* OR   nn */
         case 0xF6:
             sCPU->A |= cRAM[iPC+1];
             printf("OR\t%02x\t", cRAM[iPC+1]);
@@ -245,18 +260,24 @@ int iOR   (sState *sCPU, uchar *cRAM) {
             break;
     }
 
-    // Edit Flags
+    /* 
+     * Edit Flags
+     */
     DELFLAG(FLAG_Z | FLAG_N | FLAG_H | FLAG_C);
 
-    // Determine whether the 
-    // Zero-Flag should be set
+    /* 
+     * Determine whether the
+     * Zero-Flag should be set
+     */
     if (sCPU->A == 0)
         SETFLAG(FLAG_Z);
 
     return iRet;
 }
 
-// Pop a value from the stack
+/* 
+ * Pop a value from the stack 
+ */
 int iPOP  (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
 	int iSP = sCPU->iSP;
@@ -264,33 +285,33 @@ int iPOP  (sState *sCPU, uchar *cRAM) {
 	int iLVal = cRAM[iSP];
 	int iHVal = cRAM[iSP+1];
 
-	// Increase the stack pointer
+	/* Increase the stack pointer */
 	sCPU->iSP+=2;
 
 	switch(cRAM[iPC]) {
-		// POP	BC
+		/* POP	BC */
 		case 0xC1:
 			sCPU->B = iHVal;
 			sCPU->C = iLVal;
 			printf("POP\tBC\t");
 			break;
 		
-		// POP	DE
+		/* POP	DE */
 		case 0xD1:
 			sCPU->D = iHVal;
 			sCPU->E = iLVal;
 			printf("POP\tDE\t");
 			break;
 		
-		// POP	HL
+		/* POP	HL */
 		case 0xE1:
 			sCPU->H = iHVal;
 			sCPU->L = iLVal;
 			printf("POP\tHL\t");
 			break;
 		
-		// POP	AF
-		case 0xF1:
+		/* POP	AF */
+		case 0xF1: 
 			sCPU->A = iHVal;
 			sCPU->F = iLVal;
 			printf("POP\tAF\t");
@@ -300,35 +321,37 @@ int iPOP  (sState *sCPU, uchar *cRAM) {
 	return 1;
 }
 
-// Push a value onto the stack
+/* 
+ * Push a value onto the stack 
+ */
 int iPUSH (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
 	int iSP = sCPU->iSP;
 	uchar iHVal = 0, iLVal = 0;
 
 	switch(cRAM[iPC]) {
-		// PUSH	BC
+		/* PUSH	BC */
 		case 0xC5:
 			iHVal = sCPU->B;
 			iLVal = sCPU->C;
 			printf("PUSH\tBC\t");
 			break;
 		
-		// PUSH DE
+		/* PUSH DE */
 		case 0xD5:
 			iHVal = sCPU->D;
 			iLVal = sCPU->E;
 			printf("PUSH\tDE\t");
 			break;
 		
-		// PUSH	HL
+		/* PUSH	HL */
 		case 0xE5:
 			iHVal = sCPU->H;
 			iLVal = sCPU->L;
 			printf("PUSH\tHL\t");
 			break;
 			
-		// PUSH AF
+		/* PUSH AF */
 		case 0xF5:
 			iHVal = sCPU->A;
 			iLVal = sCPU->F;
@@ -337,17 +360,23 @@ int iPUSH (sState *sCPU, uchar *cRAM) {
 			
 	}
 	
-	// Put the value onto the stack
+	/* 
+	 * Put the value onto the stack
+	 */
 	cRAM[iSP-1] = iHVal;
 	cRAM[iSP-2] = iLVal;
 
-	// Decrease stack pointer
+	/* 
+	 * Decrease stack pointer
+	 */
 	sCPU->iSP-=2;
 
 	return 1;
 }
 
-// Call a subroutine (one byte opcode)
+/* 
+ * Call a subroutine (one byte opcode)
+ */
 int iRST  (sState *sCPU, uchar *cRAM) {
 	int iPC = sCPU->iPC;
 	int iSP = sCPU->iSP;
@@ -355,56 +384,58 @@ int iRST  (sState *sCPU, uchar *cRAM) {
 	uchar cJP=0;
 
 	switch(cRAM[iPC]) {
-		// RST	00
+		/* RST	00 */
 		case 0xC7:
 			cJP = 0x00;
 			printf("RST\t00\t");
 			break;
 
-		// RST	08
+		/* RST	08 */
 		case 0xCF:
 			cJP = 0x08;
 			printf("RST\t08\t");
 			break;
 		
-		// RST	10
+		/* RST	10 */
 		case 0xD7:
 			cJP = 0x10;
 			printf("RST\t10\t");
 			break;
 		
-		// RST	18
+		/* RST	18 */
 		case 0xDF:
 			cJP = 0x18;
 			printf("RST\t18\t");
 			break;
 		
-		// RST	20
+		/* RST	20 */
 		case 0xE7:
 			cJP = 0x20;
 			printf("RST\t20\t");
 			break;
 		
-		// RST	28
+		/* RST	28 */
 		case 0xEF:		
 			cJP = 0x28;
 			printf("RST\t28\t");
 			break;
 		
-		// RST	30
+		/* RST	30 */
 		case 0xF7:
 			cJP = 0x30;
 			printf("RST\t30\t");
 			break;
 
-		// RST	38
+		/* RST	38 */
 		case 0xFF:
 			cJP = 0x38;
 			printf("RST\t38\t");
 			break;
 	}
 	
-	// Push the calling address onto the stack
+	/* 
+	 * Push the calling address onto the stack
+	 */
 	iPC+=1;
 	cRAM[iSP-1] = (iPC >> 8) & 255;
 	cRAM[iSP-2] = iPC & 255;
@@ -415,62 +446,64 @@ int iRST  (sState *sCPU, uchar *cRAM) {
 	return 0;
 }
 
-// Bitwise XOR operation
+/* 
+ * Bitwise XOR operation
+ */
 int iXOR  (sState *sCPU, uchar *cRAM) {
     int iPC = sCPU->iPC;
     int iHL, iRet = 1;
         
     switch(cRAM[iPC]) {
-        // XOR  B
+        /* XOR  B */
         case 0xA8:
             sCPU->A ^= sCPU->B;
             printf("XOR\tB\t");
             break;
             
-        // XOR  C
+        /* XOR  C */
         case 0xA9:
             sCPU->A ^= sCPU->C;
             printf("XOR\tC\t");
             break;
 
-        // XOR  D
+        /* XOR  D */
         case 0xAA:
             sCPU->A ^= sCPU->D;
             printf("XOR\tD\t");
             break;
 
-        // XOR  E
+        /* XOR  E */
         case 0xAB:
             sCPU->A ^= sCPU->E;
             printf("XOR\tE\t");
             break;
 
-        // XOR  H
+        /* XOR  H */
         case 0xAC:
             sCPU->A ^= sCPU->H;
             printf("XOR\tH\t");
             break;
 
-        // XOR  L
+        /* XOR  L */
         case 0xAD:
             sCPU->A ^= sCPU->L;
             printf("XOR\tL\t");
             break;
 
-        // XOR  (HL)
+        /* XOR  (HL) */
         case 0xAE:
             iHL = (sCPU->H << 8) ^ sCPU->L;
             sCPU->A ^= cRAM[iHL];
             printf("XOR\t(HL)\t");
             break;
 
-        // XOR  A
+        /* XOR  A */
         case 0xAF:
             sCPU->A ^= sCPU->A;
             printf("XOR\tA\t");
             break;
 
-        // XOR  nn
+        /* XOR  nn */
         case 0xEE:
             sCPU->A ^= cRAM[iPC+1];
             printf("XOR\t%02x\t", cRAM[iPC+1]);
@@ -479,11 +512,15 @@ int iXOR  (sState *sCPU, uchar *cRAM) {
 
     }
 
-    // Edit Flags
+    /* 
+     * Edit Flags
+     */
     DELFLAG(FLAG_Z | FLAG_N | FLAG_H | FLAG_C);
 
-    // Determine whether the
-    // Zero-Flag should be set
+    /* 
+     * Determine whether the
+     * Zero-Flag should be set
+     */
     if(sCPU->A == 0)
         SETFLAG(FLAG_Z);
 

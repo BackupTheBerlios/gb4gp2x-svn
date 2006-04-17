@@ -53,7 +53,7 @@ int iCheckLogo(char *cLogo) {
 
 int iInit(char *cRAM, sState *sCPUstate) {
 
-	// initial register values
+	/* initial register values */
 	sCPUstate->A = 0x01;
 	sCPUstate->F = 0xB0;
 	sCPUstate->B = 0x00;
@@ -63,42 +63,42 @@ int iInit(char *cRAM, sState *sCPUstate) {
 	sCPUstate->H = 0x01;
 	sCPUstate->L = 0x4D;
 
-	sCPUstate->iPC = 0x0100; // entry point
-	sCPUstate->iSP = 0xFFFE; // stack pointer init
-	sCPUstate->iEI = 1; // enable interrupts
+	sCPUstate->iPC = 0x0100; /* entry point */
+	sCPUstate->iSP = 0xFFFE; /* stack pointer init */
+	sCPUstate->iEI = 1; /* enable interrupts */
 
-	cRAM[0xFF05] = 0x00; // TIMA
-	cRAM[0xFF06] = 0x00; // TMA
-	cRAM[0xFF07] = 0x00; // TAC
-	cRAM[0xFF10] = 0x80; // NR10
-	cRAM[0xFF11] = 0xBF; // NR11
-	cRAM[0xFF12] = 0xF3; // NR12
-	cRAM[0xFF14] = 0xBF; // NR14
-	cRAM[0xFF16] = 0x3F; // NR21
-	cRAM[0xFF17] = 0x00; // NR22
-	cRAM[0xFF19] = 0xBF; // NR24
-	cRAM[0xFF1A] = 0x7F; // NR30
-	cRAM[0xFF1B] = 0xFF; // NR31
-	cRAM[0xFF1C] = 0x9F; // NR32
-	cRAM[0xFF1E] = 0xBF; // NR33
-	cRAM[0xFF20] = 0xFF; // NR41
-	cRAM[0xFF21] = 0x00; // NR42
-	cRAM[0xFF22] = 0x00; // NR43
-	cRAM[0xff23] = 0xBF; // NR30
-	cRAM[0xFF24] = 0x77; // NR50
-	cRAM[0xFF25] = 0xF3; // NR51
-	cRAM[0xFF26] = 0xF1; // NR52 (0xF1 = GB, 0xF0 = SGB)
-	cRAM[0xFF40] = 0x91; // LCDC
-	cRAM[0xFF42] = 0x00; // SCY
-	cRAM[0xFF43] = 0x00; // SCX
-	cRAM[0xFF45] = 0x00; // LYC
-	cRAM[0xFF47] = 0xFC; // BGP
-	cRAM[0xFF48] = 0xFF; // OBP0
-	cRAM[0xFF49] = 0xFF; // OBP1
-	cRAM[0xFF4A] = 0x00; // WY
-	cRAM[0xFF4B] = 0x00; // WX
-	cRAM[0xFFFF] = 0x00; // IE
-
+	cRAM[0xFF05] = 0x00; /* TIMA */
+	cRAM[0xFF06] = 0x00; /* TMA */ 
+	cRAM[0xFF07] = 0x00; /* TAC */
+	cRAM[0xFF10] = 0x80; /* NR10 */
+	cRAM[0xFF11] = 0xBF; /* NR11 */
+	cRAM[0xFF12] = 0xF3; /* NR12 */
+	cRAM[0xFF14] = 0xBF; /* NR14 */
+	cRAM[0xFF16] = 0x3F; /* NR21 */
+	cRAM[0xFF17] = 0x00; /* NR22 */
+	cRAM[0xFF19] = 0xBF; /* NR24 */
+	cRAM[0xFF1A] = 0x7F; /* NR30 */
+	cRAM[0xFF1B] = 0xFF; /* NR31 */
+	cRAM[0xFF1C] = 0x9F; /* NR32 */
+	cRAM[0xFF1E] = 0xBF; /* NR33 */
+	cRAM[0xFF20] = 0xFF; /* NR41 */
+	cRAM[0xFF21] = 0x00; /* NR42 */
+	cRAM[0xFF22] = 0x00; /* NR43 */
+	cRAM[0xff23] = 0xBF; /* NR30 */
+	cRAM[0xFF24] = 0x77; /* NR50 */
+	cRAM[0xFF25] = 0xF3; /* NR51 */
+	cRAM[0xFF26] = 0xF1; /* NR52 (0xF1 = GB, 0xF0 = SGB) */
+	cRAM[0xFF40] = 0x91; /* LCDC */
+	cRAM[0xFF42] = 0x00; /* SCY */
+	cRAM[0xFF43] = 0x00; /* SCX */
+	cRAM[0xFF45] = 0x00; /* LYC */
+	cRAM[0xFF47] = 0xFC; /* BGP */
+	cRAM[0xFF48] = 0xFF; /* OBP0 */
+	cRAM[0xFF49] = 0xFF; /* OBP1 */
+	cRAM[0xFF4A] = 0x00; /* WY */
+	cRAM[0xFF4B] = 0x00; /* WX */
+	cRAM[0xFFFF] = 0x00; /* IE */
+ 
 	return 1;
 }
 
@@ -171,15 +171,16 @@ int iBoot(char *cRomFilename, char *cRAM, sState *sCPUstate) {
 	fseek(fRomFile, 0x0104, SEEK_SET);
 	fgets(cLogo, 49, fRomFile);
 	printf("done.\ndisplaying logo...\n");
-	// TODO
+	/* TODO */
 	
 	printf("checking logo... ");
 	if(iCheckLogo(cLogo))
 		printf("ok\n");
 	else {
 		printf(":(\n");
-//		fclose(fRomFile);
-//		return 0;
+/*		fclose(fRomFile);
+		return 0;
+*/
 	}
 	
 	printf("checksum: ");
@@ -194,8 +195,9 @@ int iBoot(char *cRomFilename, char *cRAM, sState *sCPUstate) {
 		printf("ok\n");
 	} else {
 		printf(":(\n");
-//		fclose(fRomFile);
-//		return 0;
+/*		fclose(fRomFile);
+		return 0;
+*/
 	}
 	
 	printf("initializing memory, registers and stack... ");
@@ -243,13 +245,13 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 	
-	// boot the ROM
+	/* boot the ROM  */
 	if(iBoot(argv[1],cRAM, &sCPUstate) == 0) {
 		printf("ERROR: Could not open '%s'.\n", argv[1]);
 		return -1;
 	}
 	
-	// statistics
+	/* statistics  */
 	printf("registers:\n");
 	printf("AF: %02x%02x\n", sCPUstate.A & 255, sCPUstate.F & 255);
 	printf("BC: %02x%02x\n", sCPUstate.B & 255, sCPUstate.C & 255);
@@ -260,7 +262,7 @@ int main(int argc, char *argv[]) {
 	
 	printf("done.\n");
 
-	// execute the beginning of the ROM
+	/* execute the beginning of the ROM  */
 	for(i=0;i<iNumOpcodes;i++)
 		iClock(&sCPUstate, cRAM);
 	
