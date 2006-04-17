@@ -31,7 +31,9 @@ He can be contacted at 'christmann@datenwelt.net'
 #ifndef _GB_H_
 #define _GB_H_
 
-// Macros for flag operations
+/*
+ * Macros for flag operations
+ */
 #define FLAG_Z 0x80
 #define FLAG_N 0x40
 #define FLAG_H 0x20
@@ -43,13 +45,13 @@ He can be contacted at 'christmann@datenwelt.net'
 typedef unsigned char uchar;
 
 typedef struct {
-	// Registers
+	/* Registers */
 	uchar A,F,B,C,D,E,H,L;
 
-	// Program counter; stack pointer
+	/* Program counter; stack pointer */
 	int iPC, iSP;
 
-	// "Enable interrupt" register
+	/* "Enable interrupt" register */
 	int iEI;
 } sState;
 

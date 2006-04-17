@@ -27,7 +27,9 @@ You can contact the author via electronic mail by the address
 #ifndef _PROC_H_
 #define _PROC_H_
 
-// These will be moved to opcodes.h "when it's done"
+/*
+ * These will be moved to opcodes.h when they're done
+ */
 int iADC  (sState *sCPU, uchar *cRAM);
 int iADD  (sState *sCPU, uchar *cRAM);
 int iAND  (sState *sCPU, uchar *cRAM);

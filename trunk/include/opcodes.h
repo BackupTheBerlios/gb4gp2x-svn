@@ -28,38 +28,38 @@ You can contact the author via electronic mail by the address
 #define _OPCODES_H_
 #include "gb.h"
 
-//int iADC  (sState *sCPU, uchar *cRAM);
-//int iADD  (sState *sCPU, uchar *cRAM);
-//int iAND  (sState *sCPU, uchar *cRAM);
-//int iBIT  (sState *sCPU, uchar *cRAM);
+/* int iADC  (sState *sCPU, uchar *cRAM);
+ * int iADD  (sState *sCPU, uchar *cRAM);
+ * int iAND  (sState *sCPU, uchar *cRAM);
+ * int iBIT  (sState *sCPU, uchar *cRAM); */
 int iCALL (sState *sCPU, uchar *cRAM);
-//int iCCF  (sState *sCPU, uchar *cRAM);
-//int iCP   (sState *sCPU, uchar *cRAM);
-//int iCPL  (sState *sCPU, uchar *cRAM);
-//int iDAA  (sState *sCPU, uchar *cRAM);
-//int iDEC  (sState *sCPU, uchar *cRAM);
+/* int iCCF  (sState *sCPU, uchar *cRAM);
+ * int iCP   (sState *sCPU, uchar *cRAM);
+ * int iCPL  (sState *sCPU, uchar *cRAM);
+ * int iDAA  (sState *sCPU, uchar *cRAM);
+ * int iDEC  (sState *sCPU, uchar *cRAM); */
 int iDI   (sState *sCPU, uchar *cRAM);
 int iEI   (sState *sCPU, uchar *cRAM);
-//int iHALT (sState *sCPU, uchar *cRAM);
-//int iINC  (sState *sCPU, uchar *cRAM);
-//int iJP   (sState *sCPU, uchar *cRAM);
-//int iJR   (sState *sCPU, uchar *cRAM);
-//int iLD   (sState *sCPU, uchar *cRAM);
+/* int iHALT (sState *sCPU, uchar *cRAM);
+ * int iINC  (sState *sCPU, uchar *cRAM);
+ * int iJP   (sState *sCPU, uchar *cRAM);
+ * int iJR   (sState *sCPU, uchar *cRAM);
+ * int iLD   (sState *sCPU, uchar *cRAM); */
 int iLDD  (sState *sCPU, uchar *cRAM);
 int iLDI  (sState *sCPU, uchar *cRAM);
 int iNOP  (sState *sCPU, uchar *cRAM);
 int iOR   (sState *sCPU, uchar *cRAM);
 int iPOP  (sState *sCPU, uchar *cRAM);
 int iPUSH (sState *sCPU, uchar *cRAM); 
-//int iRES  (sState *sCPU, uchar *cRAM);
-//int iRET  (sState *sCPU, uchar *cRAM);
-//int iRETI (sState *sCPU, uchar *cRAM);
+/* int iRES  (sState *sCPU, uchar *cRAM);
+ * int iRET  (sState *sCPU, uchar *cRAM);
+ * int iRETI (sState *sCPU, uchar *cRAM); */ 
 int iRST  (sState *sCPU, uchar *cRAM);
-//int iSBC  (sState *sCPU, uchar *cRAM);
-//int iSCF  (sState *sCPU, uchar *cRAM);
-//int iSET  (sState *sCPU, uchar *cRAM);
-//int iSTOP (sState *sCPU, uchar *cRAM);
-//int iSUB  (sState *sCPU, uchar *cRAM);
+/* int iSBC  (sState *sCPU, uchar *cRAM);
+ * int iSCF  (sState *sCPU, uchar *cRAM);
+ * int iSET  (sState *sCPU, uchar *cRAM);
+ * int iSTOP (sState *sCPU, uchar *cRAM);
+ * int iSUB  (sState *sCPU, uchar *cRAM); */
 int iXOR  (sState *sCPU, uchar *cRAM);
 
 #endif
